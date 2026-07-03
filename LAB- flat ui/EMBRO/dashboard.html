@@ -1,0 +1,1610 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<title>Embroidery Defect Monitoring Board</title>
+<style>
+/* ── CSS VARIABLES (dark default) ─────────────────────────────────────────── */
+:root {
+  --bg:          #0B0F14;
+  --panel:       #101820;
+  --panel-light: #16202A;
+  --border:      #23303B;
+  --text:        #E8EDF2;
+  --text-dim:    #7C8B97;
+  --table-bg:    #101820;
+  --table-grid:  #E8EDF2;
+}
+*, *:before, *:after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input  { font-family: inherit; }
+
+/* ── TYPOGRAPHY (no clamp - fixed vw sizes for old browsers) ──────────────── */
+.pqm-eyebrow {
+  font-family: Arial, sans-serif;
+  letter-spacing: .32em;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.pqm-board-title {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--text);
+  font-size: 2.6vw;
+  line-height: 1.1;
+}
+.pqm-clock {
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  font-size: 2vw;
+  letter-spacing: .05em;
+  color: #111827;
+  line-height: 1;
+}
+.pqm-date {
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  color: #4B5563;
+  letter-spacing: .06em;
+}
+.pqm-section-title {
+  font-family: Arial, sans-serif;
+  letter-spacing: .1em;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── HEADER ────────────────────────────────────────────────────────────────── */
+#pqm-header {
+  background: #FFFFFF;
+  border-bottom: 1px solid #D7DEE4;
+  min-height: 44px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding: 2px 10px;
+  position: relative;
+}
+#pqm-header-center {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+#pqm-header-right {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+#pqm-clock-block {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: end;
+  -ms-flex-align: end;
+  align-items: flex-end;
+}
+.pqm-header-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── SHIFT BADGE ───────────────────────────────────────────────────────────── */
+#pqm-shift-badge {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: .18em;
+  font-size: .82rem;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid currentColor;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.pqm-shift-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor;
+  -webkit-box-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 10px currentColor;
+  -webkit-animation: pqm-blink 2s ease-in-out infinite;
+  animation: pqm-blink 2s ease-in-out infinite;
+  display: inline-block;
+}
+@-webkit-keyframes pqm-blink { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+@keyframes pqm-blink { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+/* ── HAZARD STRIP (no CSS vars in background - use JS to swap class) ───────── */
+#pqm-strip {
+  height: 6px;
+  width: 100%;
+  opacity: .9;
+  -webkit-animation: pqm-strip-scroll 2.2s linear infinite;
+  animation: pqm-strip-scroll 2.2s linear infinite;
+  background-image: repeating-linear-gradient(135deg,
+    #00E676 0px, #00E676 22px, transparent 22px, transparent 44px);
+  background-size: 62px 6px;
+}
+@-webkit-keyframes pqm-strip-scroll { from{background-position:0 0;} to{background-position:62px 0;} }
+@keyframes pqm-strip-scroll { from{background-position:0 0;} to{background-position:62px 0;} }
+
+/* ── TOTAL PANEL ───────────────────────────────────────────────────────────── */
+#pqm-total-panel {
+  background: #16202A;
+  border: 1px solid #23303B;
+  border-radius: 10px;
+  padding: 5px 14px;
+  min-width: 200px;
+  text-align: center;
+  -webkit-transition: border-color .4s ease;
+  transition: border-color .4s ease;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 8px;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+}
+.pqm-total-label {
+  font-family: Arial, sans-serif;
+  letter-spacing: .08em;
+  font-weight: 700;
+  font-size: .8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+#pqm-total-number {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1;
+  -webkit-transition: color .4s ease;
+  transition: color .4s ease;
+  color: #00E676;
+}
+
+/* ── TITLE ROW ─────────────────────────────────────────────────────────────── */
+#pqm-title-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding: 1px 8px 1px;
+}
+
+/* ── DEFECT TABLE ──────────────────────────────────────────────────────────── */
+.pqm-table-wrap { width: 100%; padding: 0 2px 2px; overflow: hidden; }
+.pqm-defect-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--table-bg);
+  table-layout: fixed;
+}
+.pqm-defect-table th,
+.pqm-defect-table td {
+  border: 2px solid var(--table-grid);
+  text-align: center;
+  vertical-align: middle;
+  padding: 0 .15vw;
+}
+.pqm-defect-table thead th {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.35vw;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  line-height: 1.05;
+  white-space: normal;
+  word-break: break-word;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.pqm-col-name  { width: 18%; background: var(--panel-light); color: var(--text); }
+.pqm-col-total {
+  width: 7%;
+  background: var(--panel-light);
+  color: var(--text);
+}
+.pqm-name-cell {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.85vw;
+  letter-spacing: .03em;
+  text-align: left;
+  padding-left: .3vw;
+  color: var(--text);
+}
+.pqm-defect-cell {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 2.4vw;
+  line-height: 1;
+  color: var(--text);
+  -webkit-transition: -webkit-transform .25s ease;
+  transition: transform .25s ease;
+}
+.pqm-defect-cell.pqm-pulse { -webkit-animation: pqm-pulse .6s ease; animation: pqm-pulse .6s ease; }
+/* ── ZEBRA STRIPING ────────────────────────────────────────────────────────── */
+.pqm-defect-table tbody tr:nth-child(odd)  { background: #101820; }
+.pqm-defect-table tbody tr:nth-child(even) { background: #152230; }
+.pqm-total-cell {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 2.4vw;
+  line-height: 1;
+  color: var(--text);
+  border-left: 3px dashed #42A5F5;
+}
+@-webkit-keyframes pqm-pulse {
+  0%   { -webkit-transform: scale(1); }
+  35%  { -webkit-transform: scale(1.12); }
+  100% { -webkit-transform: scale(1); }
+}
+@keyframes pqm-pulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.12); filter: brightness(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* ── FOOTER ────────────────────────────────────────────────────────────────── */
+#pqm-footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-family: Arial, sans-serif;
+  letter-spacing: .05em;
+  font-size: .62rem;
+  padding: 2px 0 6px;
+  width: 100%;
+}
+
+/* ── ICON BUTTONS ──────────────────────────────────────────────────────────── */
+.pqm-icon-btn {
+  color: #4B5563;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  font-size: 20px;
+  -webkit-transition: color .2s ease;
+  transition: color .2s ease;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+}
+.pqm-icon-btn:hover { color: #333; }
+.pqm-icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+/* ── MODAL OVERLAY ─────────────────────────────────────────────────────────── */
+.pqm-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.65);
+  z-index: 9000;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.pqm-overlay.pqm-active {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.pqm-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  min-width: 300px;
+  max-width: 90vw;
+}
+.pqm-card label {
+  display: block;
+  font-size: .8rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.pqm-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-light);
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 16px;
+  outline: none;
+}
+.pqm-input:focus { border-color: #FFB300; }
+.pqm-btn-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 10px;
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+}
+.pqm-btn {
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: .88rem;
+  letter-spacing: .06em;
+  cursor: pointer;
+  border: none;
+}
+.pqm-btn-primary { background: #FFB300; color: #1a1200; }
+.pqm-btn-flat    { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+
+/* ── ERROR-THRESHOLD ALERT MODAL (flashing red warning) ───────────────────── */
+#error-alert-overlay { z-index: 9500; }
+.pqm-alert-box {
+  background: #B71C1C;
+  border: 4px solid #FFFFFF;
+  border-radius: 16px;
+  padding: 34px 50px;
+  max-width: 460px;
+  text-align: center;
+  position: relative;
+  -webkit-animation: pqm-alert-flash .7s ease-in-out infinite, pqm-alert-pop .25s ease-out;
+  animation: pqm-alert-flash .7s ease-in-out infinite, pqm-alert-pop .25s ease-out;
+}
+.pqm-alert-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  color: #FFFFFF;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-transition: background .15s ease;
+  transition: background .15s ease;
+}
+.pqm-alert-close:hover { background: rgba(255,255,255,.4); }
+.pqm-alert-countdown {
+  margin-top: 16px;
+  font-family: Arial, sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.78);
+}
+.pqm-alert-icon {
+  font-size: 3.4rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.pqm-alert-title {
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: .2em;
+  font-size: 1.55rem;
+  color: #FFFFFF;
+  margin-bottom: 10px;
+}
+.pqm-alert-message {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #FFFFFF;
+  line-height: 1.45;
+}
+@-webkit-keyframes pqm-alert-flash {
+  0%, 100% { background: #B71C1C; -webkit-box-shadow: 0 0 0 8px rgba(255,23,68,.25), 0 0 70px rgba(255,23,68,.85); box-shadow: 0 0 0 8px rgba(255,23,68,.25), 0 0 70px rgba(255,23,68,.85); }
+  50%      { background: #FF1744; -webkit-box-shadow: 0 0 0 14px rgba(255,23,68,.4), 0 0 100px rgba(255,23,68,1); box-shadow: 0 0 0 14px rgba(255,23,68,.4), 0 0 100px rgba(255,23,68,1); }
+}
+@keyframes pqm-alert-flash {
+  0%, 100% { background: #B71C1C; box-shadow: 0 0 0 8px rgba(255,23,68,.25), 0 0 70px rgba(255,23,68,.85); }
+  50%      { background: #FF1744; box-shadow: 0 0 0 14px rgba(255,23,68,.4), 0 0 100px rgba(255,23,68,1); }
+}
+@-webkit-keyframes pqm-alert-pop {
+  0%   { -webkit-transform: scale(.8); opacity: 0; }
+  100% { -webkit-transform: scale(1);  opacity: 1; }
+}
+@keyframes pqm-alert-pop {
+  0%   { transform: scale(.8); opacity: 0; }
+  100% { transform: scale(1);  opacity: 1; }
+}
+
+/* Row highlight for operators who have reached the error threshold */
+.pqm-defect-table tbody tr.pqm-alert-row { background: rgba(255,64,129,.22) !important; }
+
+/* ── ADMIN VIEW ────────────────────────────────────────────────────────────── */
+#admin-view {
+  display: none;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #EEF3F9 0%, #F7FAFC 100%);
+  color: #16212C;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+#admin-view.pqm-active {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+#admin-topbar {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding: 13px 22px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E1E9F1;
+  box-shadow: 0 2px 6px rgba(16,32,64,.06);
+  position: relative;
+}
+#admin-topbar-title {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: #16212C;
+}
+#admin-topbar-title .admin-title-icon { color: #1D4ED8; margin-right: 8px; }
+#admin-body {
+  padding: 20px 16px 30px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: 16px;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.admin-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E9F1;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(16,32,64,.05);
+  padding: 16px 18px;
+  width: 100%;
+  max-width: 1400px;
+}
+.admin-section-label {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 1400px;
+  margin-left: 2px;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #46566A;
+  border-left: 3px solid #1D4ED8;
+  padding-left: 9px;
+  line-height: 1.3;
+}
+.admin-table-wrap { width: 100%; overflow-x: auto; }
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+.admin-table th, .admin-table td {
+  padding: 8px 5px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: .88rem;
+}
+.admin-table thead th {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: .06em;
+  font-size: .76rem;
+  text-transform: uppercase;
+  color: #46566A;
+  background: #F2F7FB;
+  border-bottom: 2px solid #DCE6F0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  white-space: normal;
+  word-break: break-word;
+}
+.admin-table tbody tr { border-bottom: 1px solid #E9EFF5; }
+.admin-table tbody tr:nth-child(odd)  { background: #FFFFFF; }
+.admin-table tbody tr:nth-child(even) { background: #F7FAFD; }
+.admin-table tbody tr:hover { background: #EAF2FB; }
+.admin-num-cell {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 3px;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.admin-name-input {
+  padding: 6px 9px;
+  border: 1px solid #CBDAE7;
+  border-radius: 5px;
+  font-size: .9rem;
+  font-weight: 600;
+  width: 185px;
+  background: #F8FAFC;
+  color: #16212C;
+  -webkit-transition: border-color .15s ease, box-shadow .15s ease;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.admin-num-input {
+  width: 44px;
+  padding: 4px 2px;
+  border: 1px solid #CBDAE7;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  font-size: .85rem;
+  text-align: center;
+  background: #F8FAFC;
+  color: #16212C;
+  -webkit-transition: border-color .15s ease, box-shadow .15s ease;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+#admin-view input[type="text"]:focus,
+#admin-view input[type="number"]:focus,
+#admin-view select:focus {
+  outline: none;
+  border-color: #1D4ED8;
+  box-shadow: 0 0 0 3px rgba(29,78,216,.14);
+}
+.admin-step-btn {
+  width: 22px; height: 22px;
+  border: 1px solid #CBDAE7;
+  border-radius: 50%;
+  background: #EEF4FB;
+  color: #1D4ED8;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -webkit-transition: background .15s ease;
+  transition: background .15s ease;
+}
+.admin-step-btn:hover { background: #CBDAE7; }
+.admin-del-btn {
+  background: none;
+  border: none;
+  color: #E0143C;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+  border-radius: 5px;
+  -webkit-transition: background .15s ease;
+  transition: background .15s ease;
+}
+.admin-del-btn:hover { background: #FCE4E9; }
+#admin-add-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 10px;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+#admin-new-name {
+  padding: 8px 12px;
+  border: 1px solid #CBDAE7;
+  border-radius: 6px;
+  font-size: .95rem;
+  font-weight: 600;
+  -webkit-box-flex: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  background: #F8FAFC;
+  color: #16212C;
+  min-width: 180px;
+  -webkit-transition: border-color .15s ease, box-shadow .15s ease;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.admin-action-btn {
+  padding: 9px 22px;
+  border-radius: 7px;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: .85rem;
+  letter-spacing: .06em;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16,32,64,.18);
+  -webkit-transition: background .15s ease, -webkit-transform .1s ease;
+  transition: background .15s ease, transform .1s ease;
+}
+.admin-action-btn:hover  { -webkit-transform: translateY(-1px); transform: translateY(-1px); }
+.admin-action-btn:active { -webkit-transform: translateY(0);    transform: translateY(0); }
+.btn-green { background: #00C853; color: #06210f; }
+.btn-green:hover { background: #00B34B; }
+.btn-amber { background: #FFB300; color: #1a1200; }
+.btn-amber:hover { background: #E6A100; }
+.btn-blue  { background: #1D4ED8; color: #fff; }
+.btn-blue:hover { background: #1840B0; }
+.btn-red   { background: #E0143C; color: #fff; }
+.btn-red:hover { background: #C20E30; }
+.admin-save-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  gap: 12px;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+/* ── TOAST ─────────────────────────────────────────────────────────────────── */
+#pqm-toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  color: #fff;
+  background: #333;
+  z-index: 9999;
+  display: none;
+  max-width: 320px;
+}
+#pqm-toast.pqm-active { display: block; }
+
+/* ── LIGHT MODE OVERRIDES ──────────────────────────────────────────────────── */
+body.light-mode {
+  --bg:          #EEF1F4;
+  --panel:       #FFFFFF;
+  --panel-light: #F6F8FA;
+  --border:      #D7DEE4;
+  --text:        #101820;
+  --text-dim:    #5B6772;
+  --table-bg:    #FFFFFF;
+  --table-grid:  #101820;
+}
+body.light-mode #pqm-total-panel {
+  background: #F6F8FA;
+  border-color: #D7DEE4;
+}
+body.light-mode .pqm-defect-table tbody tr:nth-child(odd)  { background: #FFFFFF; }
+body.light-mode .pqm-defect-table tbody tr:nth-child(even) { background: #DCEAF7; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ DASHBOARD VIEW ══════════════════════════ -->
+<div id="dashboard-view">
+
+  <div id="pqm-header">
+    <img src="/logo.png" class="pqm-header-logo" alt="Logo" onerror="this.style.display='none'">
+    <div id="pqm-header-center">
+      <span style="font-family:Arial,sans-serif; font-weight:900; letter-spacing:.04em; color:#101820; font-size:2.6vw; line-height:1.1; text-transform:uppercase; white-space:nowrap;">Embroidery Defect Monitoring</span>
+    </div>
+    <div id="pqm-header-right">
+      <div id="pqm-clock-block">
+        <span id="pqm-date" class="pqm-date"></span>
+        <span id="pqm-clock" class="pqm-clock"></span>
+      </div>
+
+      <button class="pqm-icon-btn" id="btn-theme" title="Toggle theme" onclick="toggleTheme()">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+
+      <button class="pqm-icon-btn" title="Fullscreen" onclick="toggleFullscreen()">
+        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      </button>
+
+      <button class="pqm-icon-btn" title="Admin settings" onclick="openLoginDialog()">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.477.477 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="pqm-strip"></div>
+  <div style="height:3px;"></div>
+
+  <div id="pqm-title-row">
+    <div id="pqm-total-panel">
+      <span class="pqm-total-label">TOTAL ERRORS:</span>
+      <span id="pqm-total-number">0</span>
+    </div>
+  </div>
+
+  <div style="height:1px;"></div>
+
+  <div class="pqm-table-wrap">
+    <table class="pqm-defect-table">
+      <thead id="pqm-thead"><tr><th>Loading...</th></tr></thead>
+      <tbody id="pqm-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="pqm-footer">Connecting...</div>
+
+</div>
+
+
+<!-- ════════════════════════════════ ADMIN VIEW ═════════════════════════════ -->
+<div id="admin-view">
+  <div id="admin-topbar">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <!-- Alarm icon + schedule picker -->
+      <div id="report-scheduler" style="display:flex; align-items:center; gap:8px; background:#EAF5FF; border:1.5px solid #C7D9E8; border-radius:8px; padding:6px 12px;">
+        <span id="alarm-icon" title="Auto Report Scheduler" style="font-size:1.4rem; line-height:1; cursor:default; position:relative;">
+          &#9200;
+          <span id="alarm-active-dot" style="display:none; position:absolute; top:0; right:-2px; width:8px; height:8px; background:#00C853; border-radius:50%; border:1.5px solid #EAF5FF;"></span>
+        </span>
+        <span style="font-family:Arial,sans-serif; font-weight:700; font-size:.78rem; letter-spacing:.08em; color:#5B6772; text-transform:uppercase; white-space:nowrap;">Auto Report</span>
+        <select id="sched-hour" onchange="onScheduleChange()" style="padding:4px 6px; border:1px solid #C7D9E8; border-radius:5px; font-family:Arial,sans-serif; font-weight:700; font-size:.88rem; background:#fff; color:#101820; cursor:pointer;"></select>
+        <span style="font-weight:700; color:#5B6772;">:</span>
+        <select id="sched-min" onchange="onScheduleChange()" style="padding:4px 6px; border:1px solid #C7D9E8; border-radius:5px; font-family:Arial,sans-serif; font-weight:700; font-size:.88rem; background:#fff; color:#101820; cursor:pointer;"></select>
+        <span id="sched-status" style="font-family:Arial,sans-serif; font-size:.75rem; color:#5B6772; white-space:nowrap;">OFF</span>
+      </div>
+    </div>
+    <span id="admin-topbar-title">&#9881;&#65039;<span style="margin-left:8px;">ADMIN CONTROL PANEL</span></span>
+    <button class="admin-action-btn btn-blue" onclick="goDashboard()">&#8592; RETURN TO DASHBOARD</button>
+  </div>
+  <div id="admin-body">
+    <span class="admin-section-label">ADD NEW OPERATOR</span>
+    <div class="admin-card" style="max-width:1400px;">
+      <div id="admin-add-row">
+        <input id="admin-new-name" type="text" placeholder="New operator name">
+        <button class="admin-action-btn btn-green" onclick="addEmployee()">&#43; ADD OPERATOR</button>
+      </div>
+    </div>
+    <span class="admin-section-label">OPERATORS</span>
+    <div class="admin-card" style="max-width:1400px;">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead id="admin-thead"></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <span class="admin-section-label">QUICK ACTIONS</span>
+    <div class="admin-card" style="max-width:1400px;">
+      <div class="admin-save-row">
+        <button class="admin-action-btn btn-blue" onclick="exportToExcel()">&#11015; EXPORT TO EXCEL</button>
+        <button class="admin-action-btn btn-red" onclick="resetAllCounters()">&#9888; RESET ALL COUNTERS</button>
+        <button class="admin-action-btn btn-green" onclick="saveAll()">&#10003; SAVE CHANGES</button>
+        <button class="admin-action-btn btn-blue"  onclick="goDashboard()">&#8592; RETURN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════ LOGIN DIALOG ═══════════════════════════ -->
+<div class="pqm-overlay" id="login-overlay">
+  <div class="pqm-card">
+    <p class="pqm-section-title" style="margin-bottom:16px; font-size:1.1rem;">ADMIN LOGIN</p>
+    <label for="login-pwd">Password</label>
+    <input class="pqm-input" id="login-pwd" type="password" placeholder="Enter password">
+    <div class="pqm-btn-row">
+      <button class="pqm-btn pqm-btn-flat" onclick="closeLoginDialog()">CANCEL</button>
+      <button class="pqm-btn pqm-btn-primary" onclick="doLogin()">LOGIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ ERROR THRESHOLD ALERT ══════════════════════ -->
+<div class="pqm-overlay" id="error-alert-overlay">
+  <div class="pqm-alert-box">
+    <button class="pqm-alert-close" id="error-alert-close-btn" onclick="closeErrorAlert()" title="Dismiss">&times;</button>
+    <div class="pqm-alert-icon">&#9888;&#65039;</div>
+    <div class="pqm-alert-title">WARNING</div>
+    <div class="pqm-alert-message" id="error-alert-message"></div>
+    <div class="pqm-alert-countdown" id="error-alert-countdown"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="pqm-toast"></div>
+
+
+<!-- ════════════════════════════════ JAVASCRIPT ═════════════════════════════
+     Pure ES5 - no arrow functions, no const/let, no template literals,
+     no fetch, no import/export, no CSS custom property setProperty.
+     Uses only XMLHttpRequest + DOM manipulation.
+════════════════════════════════════════════════════════════════════════════ -->
+<script>
+/* ── APP STATE ────────────────────────────────────────────────────────────── */
+var isLight        = false;
+var isAdmin        = false;
+var lastShift      = null;  /* tracks MORNING/NIGHT shift so theme auto-switches exactly at 6am/6pm */
+var prevTotals     = {};
+var prevGrandTotal = -1;
+var categories     = [];
+var threshOrange   = 6;
+var threshRed      = 16;
+var pollTimer      = null;
+var toastTimer     = null;
+var adminData      = [];   /* local copy for admin editing */
+
+/* ── ERROR THRESHOLD ALERT STATE ──────────────────────────────────────────── */
+var ERROR_ALERT_THRESHOLD = 5;   /* total defects that triggers the warning modal */
+var ERROR_ALERT_DURATION  = 120000; /* ms the modal stays on screen (2 minutes) */
+var errorAlertQueue   = [];
+var errorAlertShowing = false;
+var errorAlertTimer   = null;
+var errorAlertBeepInterval     = null;
+var errorAlertCountdownInterval = null;
+var errorAlertEndTime = 0;
+
+/* ── SEVERITY COLOR ───────────────────────────────────────────────────────── */
+function severityColor(count) {
+  if (isLight) {
+    if (count <= 0)                return '#15803D';
+    if (count < threshOrange)      return '#A16207';
+    if (count < threshRed)         return '#C2410C';
+    return '#B91C1C';
+  }
+  if (count <= 0)                  return '#00E676';
+  if (count < threshOrange)        return '#FFD600';
+  if (count < threshRed)           return '#FF6D00';
+  return '#FF1744';
+}
+
+/* ── STRIP COLOR (no CSS var setProperty - direct backgroundImage) ─────────── */
+var STRIP_COLORS = ['#00E676','#FFD600','#FF6D00','#FF1744'];
+function updateStrip(worstTotal) {
+  var color = severityColor(worstTotal);
+  var strip = document.getElementById('pqm-strip');
+  strip.style.backgroundImage =
+    'repeating-linear-gradient(135deg,' +
+    color + ' 0px,' + color + ' 22px,' +
+    'transparent 22px,transparent 44px)';
+}
+
+/* ── TOAST ────────────────────────────────────────────────────────────────── */
+function showToast(msg, type) {
+  var el = document.getElementById('pqm-toast');
+  el.innerHTML = msg;
+  el.style.background =
+    type === 'error' ? '#B91C1C' :
+    type === 'warn'  ? '#A16207' : '#15803D';
+  el.className = 'pqm-active';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.className = ''; }, 3000);
+}
+
+/* ── ERROR THRESHOLD ALERT ────────────────────────────────────────────────── */
+/* Detects the moment an operator's running total crosses the threshold
+   (e.g. goes from 4 to 5+) and queues a flashing warning modal for them.
+   oldTotal === undefined means we're seeing this operator for the first
+   time this session (page just loaded) - we don't want to fire a flood of
+   alerts for people who were already over the threshold, so that case is
+   skipped on purpose. */
+function checkErrorAlert(name, oldTotal, newTotal) {
+  if (typeof oldTotal === 'undefined') return;
+  if (oldTotal < ERROR_ALERT_THRESHOLD && newTotal >= ERROR_ALERT_THRESHOLD) {
+    errorAlertQueue.push({name: name, total: newTotal});
+    if (!errorAlertShowing) showNextErrorAlert();
+  }
+}
+
+function showNextErrorAlert() {
+  if (errorAlertQueue.length === 0) { errorAlertShowing = false; return; }
+  errorAlertShowing = true;
+  var item = errorAlertQueue.shift();
+  var msg  = '<b>' + esc(item.name) + '</b> reached ' + item.total +
+             ' error' + (item.total === 1 ? '' : 's') + '.<br>Please take note.';
+  document.getElementById('error-alert-message').innerHTML = msg;
+  document.getElementById('error-alert-overlay').className = 'pqm-overlay pqm-active';
+
+  pqmNotifyChime(); /* immediately, then every 10s for the duration of the modal */
+  clearInterval(errorAlertBeepInterval);
+  errorAlertBeepInterval = setInterval(pqmNotifyChime, 10000);
+
+  /* countdown label, e.g. "Closing in 1:47" */
+  errorAlertEndTime = new Date().getTime() + ERROR_ALERT_DURATION;
+  updateErrorAlertCountdown();
+  clearInterval(errorAlertCountdownInterval);
+  errorAlertCountdownInterval = setInterval(updateErrorAlertCountdown, 250);
+
+  clearTimeout(errorAlertTimer);
+  errorAlertTimer = setTimeout(closeErrorAlert, ERROR_ALERT_DURATION);
+}
+
+function updateErrorAlertCountdown() {
+  var el = document.getElementById('error-alert-countdown');
+  if (!el) return;
+  var remainingSec = Math.max(0, Math.ceil((errorAlertEndTime - new Date().getTime()) / 1000));
+  var m = Math.floor(remainingSec / 60);
+  var s = remainingSec % 60;
+  el.innerHTML = 'Closing in ' + m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+/* Shared cleanup - used both when the 2-minute timer runs out AND when an
+   admin clicks the X to dismiss it early so they can get back to the
+   dashboard / admin panel right away. */
+function closeErrorAlert() {
+  clearTimeout(errorAlertTimer);
+  clearInterval(errorAlertBeepInterval);
+  clearInterval(errorAlertCountdownInterval);
+  document.getElementById('error-alert-overlay').className = 'pqm-overlay';
+  /* small gap before the next queued alert, if any */
+  setTimeout(showNextErrorAlert, 250);
+}
+
+/* Soft two-note "ding" - easy to notice without sounding like a siren/alarm.
+   Kept separate from pqmBeep() (used for normal +1 ticks) on purpose. */
+function pqmNotifyChime() {
+  try {
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    var ctx = new AudioCtx();
+    var playNote = function(freq, startAt, dur) {
+      var osc  = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + startAt);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + startAt);
+      gain.gain.exponentialRampToValueAtTime(0.22,   ctx.currentTime + startAt + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startAt + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + startAt);
+      osc.stop(ctx.currentTime + startAt + dur + 0.05);
+    };
+    playNote(740.0,  0,    0.30); /* F#5 */
+    playNote(987.77, 0.16, 0.45); /* B5  */
+  } catch(e) {}
+}
+
+/* ── BEEP ─────────────────────────────────────────────────────────────────── */
+function pqmBeep() {
+  try {
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    var ctx  = new AudioCtx();
+    var osc  = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18,   ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+/* ── FULLSCREEN ───────────────────────────────────────────────────────────── */
+function toggleFullscreen() {
+  var el  = document.documentElement;
+  var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+  var ex  = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+  var cur = document.fullscreenElement || document.webkitFullscreenElement;
+  if (!cur) { if (req) req.call(el); }
+  else      { if (ex)  ex.call(document); }
+}
+
+/* ── THEME ────────────────────────────────────────────────────────────────── */
+function applyTheme() {
+  document.body.className = isLight ? 'light-mode' : '';
+}
+
+function toggleTheme() {
+  isLight = !isLight;
+  applyTheme();
+}
+
+/* ── LOGIN DIALOG ─────────────────────────────────────────────────────────── */
+function openLoginDialog() {
+  document.getElementById('login-pwd').value = '';
+  document.getElementById('login-overlay').className = 'pqm-overlay pqm-active';
+}
+function closeLoginDialog() {
+  document.getElementById('login-overlay').className = 'pqm-overlay';
+  document.getElementById('login-pwd').value = '';
+}
+
+/* Pressing Enter in the password field logs in */
+document.getElementById('login-pwd').onkeydown = function(e) {
+  var k = e.key || e.keyCode;
+  if (k === 'Enter' || k === 13) doLogin();
+};
+
+function doLogin() {
+  var pwd = document.getElementById('login-pwd').value;
+  apiPost('/api/login', {password: pwd}, function(data) {
+    if (data && data.ok) {
+      closeLoginDialog();
+      goAdmin();
+    } else {
+      showToast('Incorrect password.', 'error');
+      document.getElementById('login-pwd').value = '';
+    }
+  }, function() {
+    showToast('Incorrect password.', 'error');
+    document.getElementById('login-pwd').value = '';
+  });
+}
+
+/* ── VIEW SWITCHING ───────────────────────────────────────────────────────── */
+function goAdmin() {
+  isAdmin = true;
+  clearTimeout(pollTimer);
+  document.getElementById('dashboard-view').style.display = 'none';
+  document.getElementById('admin-view').className = 'pqm-active';
+  loadAdminData();
+}
+
+function goDashboard() {
+  isAdmin = false;
+  document.getElementById('admin-view').className = '';
+  document.getElementById('dashboard-view').style.display = '';
+  schedulePoll(0);
+}
+
+/* ── XHR HELPERS ──────────────────────────────────────────────────────────── */
+function apiGet(url, onOk, onErr) {
+  var req = new XMLHttpRequest();
+  req.open('GET', url + '?_=' + new Date().getTime(), true); /* bust cache */
+  req.timeout = 6000; /* don't let one stalled request freeze the dashboard forever */
+  req.onreadystatechange = function() {
+    if (req.readyState !== 4) return;
+    var data = null;
+    try { data = JSON.parse(req.responseText); } catch(e) {}
+    if (req.status >= 200 && req.status < 300 && data) {
+      if (onOk) onOk(data);
+    } else {
+      if (onErr) onErr(data);
+    }
+  };
+  req.onerror   = function() { if (onErr) onErr(null); };
+  req.ontimeout = function() { if (onErr) onErr(null); };
+  req.send();
+}
+
+function apiPost(url, body, onOk, onErr) {
+  var req = new XMLHttpRequest();
+  req.open('POST', url, true);
+  req.setRequestHeader('Content-Type', 'application/json');
+  req.timeout = 6000;
+  req.onreadystatechange = function() {
+    if (req.readyState !== 4) return;
+    var data = null;
+    try { data = JSON.parse(req.responseText); } catch(e) {}
+    if (req.status >= 200 && req.status < 300 && data) {
+      if (onOk) onOk(data);
+    } else {
+      if (onErr) onErr(data);
+    }
+  };
+  req.onerror   = function() { if (onErr) onErr(null); };
+  req.ontimeout = function() { if (onErr) onErr(null); };
+  req.send(JSON.stringify(body));
+}
+
+/* ── ESCAPE HTML ──────────────────────────────────────────────────────────── */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ── BUILD DASHBOARD TABLE ────────────────────────────────────────────────── */
+function buildDashboardTable(employees) {
+  var cats   = categories;
+  var thead  = document.getElementById('pqm-thead');
+  var tbody  = document.getElementById('pqm-tbody');
+
+  /* Header */
+  var hHTML = '<tr><th class="pqm-col-name" style="font-size:1.35vw; line-height:1.05;">OPERATOR<br>NAME</th>';
+  var i, parts, line1, line2;
+  for (i = 0; i < cats.length; i++) {
+    parts = esc(cats[i].label).trim().split(/\s+/);
+    line1 = parts[0];
+    line2 = parts.length > 1 ? parts.slice(1).join(' ') : '';
+    hHTML += '<th style="background:' + cats[i].bg + ';color:' + cats[i].fg + ';">';
+    hHTML += line1;
+    if (line2) hHTML += '<br>' + line2;
+    hHTML += '</th>';
+  }
+  hHTML += '<th class="pqm-col-total">TOTAL</th></tr>';
+  thead.innerHTML = hHTML;
+
+  /* Body */
+  if (!employees || employees.length === 0) {
+    var span = cats.length + 2;
+    tbody.innerHTML = '<tr><td colspan="' + span + '" style="color:var(--text-dim);padding:24px;text-align:center;">No operators configured. Open Settings to add one.</td></tr>';
+    return;
+  }
+
+  var bHTML = '';
+  var r, c, emp, val, oldTotal, pulse, totalColor, isAlertRow;
+  for (r = 0; r < employees.length; r++) {
+    emp      = employees[r];
+    oldTotal = prevTotals[emp.name];
+    pulse    = (oldTotal !== undefined && oldTotal !== emp.total) ? ' pqm-pulse' : '';
+
+    checkErrorAlert(emp.name, oldTotal, emp.total);
+    prevTotals[emp.name] = emp.total;
+
+    isAlertRow = (emp.total >= ERROR_ALERT_THRESHOLD);
+    bHTML += '<tr' + (isAlertRow ? ' class="pqm-alert-row"' : '') + '>';
+    bHTML += '<td class="pqm-name-cell">' + esc(emp.name) + '</td>';
+
+    for (c = 0; c < cats.length; c++) {
+      val       = (emp.defects && emp.defects[cats[c].key] !== undefined) ? emp.defects[cats[c].key] : 0;
+      bHTML += '<td class="pqm-defect-cell' + pulse + '">' + val + '</td>';
+    }
+
+    totalColor = severityColor(emp.total);
+    bHTML += '<td class="pqm-total-cell' + pulse + '" style="color:' + totalColor + ';border-left:3px dashed #42A5F5;">' + emp.total + '</td>';
+    bHTML += '</tr>';
+  }
+  tbody.innerHTML = bHTML;
+}
+
+/* ── POLL DASHBOARD ───────────────────────────────────────────────────────── */
+function pollDashboard() {
+  apiGet('/api/state', function(data) {
+    if (isAdmin) { schedulePoll(1000); return; }
+
+    if (data.categories && data.categories.length) categories   = data.categories;
+    if (data.threshold_orange)  threshOrange = data.threshold_orange;
+    if (data.threshold_red)     threshRed    = data.threshold_red;
+
+    /* clock */
+    document.getElementById('pqm-date').innerHTML  = data.now.date;
+    document.getElementById('pqm-clock').innerHTML = data.now.time;
+
+    /* shift */
+    var isNight    = (data.shift === 'NIGHT SHIFT');
+    var shiftColor = isLight
+      ? (isNight ? '#1D4ED8' : '#B45309')
+      : (isNight ? '#5C8DFF' : '#FFB300');
+    /* shift badge removed */
+
+    /* auto theme: light 06:00-18:00, dark 18:00-06:00 — switches the moment the shift changes */
+    if (lastShift === null || data.shift !== lastShift) {
+      isLight = !isNight;
+      applyTheme();
+    }
+    lastShift = data.shift;
+
+    /* total */
+    var total  = data.grand_total || 0;
+    var tColor = severityColor(total);
+    document.getElementById('pqm-total-number').innerHTML          = total;
+    document.getElementById('pqm-total-number').style.color        = tColor;
+    document.getElementById('pqm-total-panel').style.borderColor   = tColor;
+
+    /* strip */
+    var worst = 0;
+    if (data.employees) {
+      var i;
+      for (i = 0; i < data.employees.length; i++) {
+        if (data.employees[i].total > worst) worst = data.employees[i].total;
+      }
+    }
+    updateStrip(worst);
+
+    /* beep */
+    if (prevGrandTotal >= 0 && total > prevGrandTotal) pqmBeep();
+    prevGrandTotal = total;
+
+    /* footer */
+    document.getElementById('pqm-footer').innerHTML = data.last_updated || '';
+
+    /* table */
+    buildDashboardTable(data.employees || []);
+
+    schedulePoll(1000);
+  }, function() {
+    document.getElementById('pqm-footer').innerHTML = 'Connection error - retrying...';
+    schedulePoll(2000);
+  });
+}
+
+function schedulePoll(delay) {
+  clearTimeout(pollTimer);
+  var ms = (delay === undefined) ? 1000 : delay;
+  pollTimer = setTimeout(pollDashboard, ms);
+}
+
+/* ── ADMIN: LOAD DATA ─────────────────────────────────────────────────────── */
+function loadAdminData() {
+  apiGet('/api/state', function(data) {
+    if (data.categories && data.categories.length) categories = data.categories;
+    applyScheduleFromServer(data.schedule);
+    /* Deep copy employees */
+    adminData = JSON.parse(JSON.stringify(data.employees || []));
+    renderAdminTable();
+  }, function() {
+    showToast('Failed to load data.', 'error');
+  });
+}
+
+/* ── ADMIN: RENDER TABLE ──────────────────────────────────────────────────── */
+function renderAdminTable() {
+  var cats  = categories;
+  var thead = document.getElementById('admin-thead');
+  var tbody = document.getElementById('admin-tbody');
+  var i, r, c;
+
+  /* Header */
+  var hHTML = '<tr><th style="text-align:left; min-width:185px;">Operator</th>';
+  for (i = 0; i < cats.length; i++) {
+    hHTML += '<th style="color:' + cats[i].bg + '; min-width:120px;">' + esc(cats[i].label) + '</th>';
+  }
+  hHTML += '<th style="min-width:55px;">Total</th><th style="min-width:40px;"></th></tr>';
+  thead.innerHTML = hHTML;
+
+  /* Body */
+  if (!adminData || adminData.length === 0) {
+    var span = cats.length + 3;
+    tbody.innerHTML = '<tr><td colspan="' + span + '" style="color:#5B6772; padding:16px; text-align:center;">No operators yet. Add one above.</td></tr>';
+    return;
+  }
+
+  var bHTML = '';
+  var emp, val, rowTotal;
+  for (r = 0; r < adminData.length; r++) {
+    emp = adminData[r];
+    rowTotal = emp.total || 0;
+
+    bHTML += '<tr>';
+    /* Name */
+    bHTML += '<td style="text-align:left; padding-right:2px;">';
+    bHTML += '<input class="admin-name-input" type="text" value="' + esc(emp.name) + '" onchange="onAdminNameChange(this,' + r + ')">';
+    bHTML += '</td>';
+    /* Defect cells */
+    for (c = 0; c < cats.length; c++) {
+      val = (emp.defects && emp.defects[cats[c].key] !== undefined) ? emp.defects[cats[c].key] : 0;
+      bHTML += '<td style="padding-left:' + (c === 0 ? '2px' : '5px') + ';">';
+      bHTML += '<div class="admin-num-cell">';
+      bHTML += '<button class="admin-step-btn" onclick="stepDefect(' + r + ',\'' + cats[c].key + '\',-1)">-</button>';
+      bHTML += '<input class="admin-num-input" type="number" min="0" step="1" value="' + val + '" onchange="onDefectChange(this,' + r + ',\'' + cats[c].key + '\')">';
+      bHTML += '<button class="admin-step-btn" onclick="stepDefect(' + r + ',\'' + cats[c].key + '\',1)">+</button>';
+      bHTML += '</div>';
+      bHTML += '</td>';
+    }
+    /* Total */
+    bHTML += '<td id="rowtotal-' + r + '" style="font-family:Arial,sans-serif; font-weight:700;">' + rowTotal + '</td>';
+    /* Delete */
+    bHTML += '<td><button class="admin-del-btn" onclick="deleteEmployee(' + r + ')" title="Remove">&#10006;</button></td>';
+    bHTML += '</tr>';
+  }
+  tbody.innerHTML = bHTML;
+}
+
+/* ── ADMIN: EVENT HANDLERS ────────────────────────────────────────────────── */
+function onAdminNameChange(inp, idx) {
+  adminData[idx].name = inp.value.trim() || adminData[idx].name;
+}
+
+function onDefectChange(inp, idx, key) {
+  var val = parseInt(inp.value, 10);
+  if (isNaN(val) || val < 0) val = 0;
+  inp.value = val;
+  adminData[idx].defects[key] = val;
+  refreshRowTotal(idx);
+}
+
+function stepDefect(idx, key, delta) {
+  var cur  = adminData[idx].defects[key] || 0;
+  var next = cur + delta;
+  if (next < 0) next = 0;
+  adminData[idx].defects[key] = next;
+  refreshRowTotal(idx);
+  /* Update the corresponding input */
+  var row  = document.getElementById('admin-tbody').rows[idx];
+  if (!row) return;
+  var inputs = row.getElementsByClassName('admin-num-input');
+  var cats   = categories;
+  var c;
+  for (c = 0; c < cats.length; c++) {
+    if (cats[c].key === key && inputs[c]) { inputs[c].value = next; break; }
+  }
+}
+
+function refreshRowTotal(idx) {
+  var emp  = adminData[idx];
+  var cats = categories;
+  var t = 0;
+  var i;
+  for (i = 0; i < cats.length; i++) t += (emp.defects[cats[i].key] || 0);
+  emp.total = t;
+  var cell = document.getElementById('rowtotal-' + idx);
+  if (cell) cell.innerHTML = t;
+}
+
+function addEmployee() {
+  var nameEl = document.getElementById('admin-new-name');
+  var name   = (nameEl.value || '').replace(/^\s+|\s+$/g, '');
+  if (!name) { showToast('Enter an operator name first.', 'warn'); return; }
+
+  var i;
+  for (i = 0; i < adminData.length; i++) {
+    if (adminData[i].name.toLowerCase() === name.toLowerCase()) {
+      showToast('That operator already exists.', 'warn');
+      return;
+    }
+  }
+
+  apiPost('/api/employees/add', {name: name}, function(data) {
+    if (data && data.ok) {
+      nameEl.value = '';
+      showToast('Added "' + name + '".', 'ok');
+      loadAdminData();
+    } else {
+      showToast((data && data.error) || 'Error adding operator.', 'error');
+    }
+  }, function() {
+    showToast('Server error.', 'error');
+  });
+}
+
+function deleteEmployee(idx) {
+  var name = adminData[idx].name;
+  apiPost('/api/employees/delete', {name: name}, function(data) {
+    if (data && data.ok) {
+      showToast('Removed "' + name + '".', 'ok');
+      loadAdminData();
+    } else {
+      showToast((data && data.error) || 'Error.', 'error');
+    }
+  }, function() {
+    showToast('Server error.', 'error');
+  });
+}
+
+function saveAll() {
+  /* Flush any un-blur'd name inputs */
+  var nameInputs = document.getElementById('admin-tbody').getElementsByClassName('admin-name-input');
+  var i;
+  for (i = 0; i < nameInputs.length; i++) {
+    if (adminData[i]) adminData[i].name = nameInputs[i].value.trim() || adminData[i].name;
+  }
+
+  apiPost('/api/employees', {employees: adminData}, function(data) {
+    if (data && data.ok) {
+      showToast('Changes saved.', 'ok');
+      loadAdminData();
+    } else {
+      showToast('Save failed.', 'error');
+    }
+  }, function() {
+    showToast('Server error.', 'error');
+  });
+}
+
+/* ── ADMIN: EXPORT TO EXCEL ───────────────────────────────────────────────── */
+function exportToExcel() {
+  window.location.href = '/api/export/excel';
+}
+
+/* ── ADMIN: SAVE DAILY SNAPSHOT → reports/defects_YYYY-MM.xlsx ───────────── */
+function saveDailySnapshot() {
+  var sure = window.confirm(
+    'Save today\'s defect data as a daily snapshot?\n\n' +
+    'This will:\n' +
+    '  • Write a new worksheet in reports/defects_YYYY-MM.xlsx\n' +
+    '  • Reset ALL counters to 0\n\n' +
+    'Continue?'
+  );
+  if (!sure) return;
+  apiPost('/api/export/daily', {}, function(data) {
+    if (data && data.ok) {
+      showToast('Daily snapshot saved. Counters reset.', 'ok');
+      loadAdminData();
+    } else {
+      showToast((data && data.error) || 'Snapshot failed.', 'error');
+    }
+  }, function() {
+    showToast('Server error.', 'error');
+  });
+}
+
+/* ── ADMIN: RESET ALL COUNTERS ────────────────────────────────────────────── */
+function resetAllCounters() {
+  var sure = window.confirm('Reset ALL defect counters for every operator to 0?\nThis cannot be undone.');
+  if (!sure) return;
+  apiPost('/api/employees/reset', {}, function(data) {
+    if (data && data.ok) {
+      showToast('All counters reset to 0.', 'ok');
+      loadAdminData();
+    } else {
+      showToast((data && data.error) || 'Reset failed.', 'error');
+    }
+  }, function() {
+    showToast('Server error.', 'error');
+  });
+}
+
+/* ── REPORT SCHEDULER ─────────────────────────────────────────────────────── */
+/* The actual checking/firing happens server-side in tray_app.py now, so the
+   schedule keeps working even with no browser open anywhere. This client
+   code just displays the current server-side setting and lets the admin
+   change it. */
+var schedHour = -1;   /* -1 = OFF */
+var schedMin  = 0;
+
+function buildScheduleDropdowns() {
+  var hSel = document.getElementById('sched-hour');
+  var mSel = document.getElementById('sched-min');
+  var i, opt;
+
+  /* Hour: OFF + 00-23 */
+  opt = document.createElement('option');
+  opt.value = -1; opt.text = '-- hr'; hSel.appendChild(opt);
+  for (i = 0; i < 24; i++) {
+    opt = document.createElement('option');
+    opt.value = i;
+    opt.text  = (i < 10 ? '0' : '') + i;
+    hSel.appendChild(opt);
+  }
+
+  /* Minute: 00-59 step 1 */
+  for (i = 0; i < 60; i++) {
+    opt = document.createElement('option');
+    opt.value = i;
+    opt.text  = (i < 10 ? '0' : '') + i;
+    mSel.appendChild(opt);
+  }
+}
+
+function applyScheduleFromServer(sched) {
+  if (!sched) return;
+  schedHour = (typeof sched.hour === 'number') ? sched.hour : -1;
+  schedMin  = (typeof sched.minute === 'number') ? sched.minute : 0;
+  var hSel = document.getElementById('sched-hour');
+  var mSel = document.getElementById('sched-min');
+  if (hSel) hSel.value = schedHour;
+  if (mSel) mSel.value = schedMin;
+  updateSchedStatus();
+}
+
+function onScheduleChange() {
+  var h = parseInt(document.getElementById('sched-hour').value, 10);
+  var m = parseInt(document.getElementById('sched-min').value,  10);
+  schedHour = isNaN(h) ? -1 : h;
+  schedMin  = isNaN(m) ?  0 : m;
+  updateSchedStatus();
+  apiPost('/api/schedule', {hour: schedHour, minute: schedMin}, function(data) {
+    if (data && data.ok) {
+      showToast(schedHour >= 0 ? 'Auto report time saved.' : 'Auto report turned off.', 'ok');
+    } else {
+      showToast('Could not save schedule.', 'error');
+    }
+  }, function() {
+    showToast('Server error saving schedule.', 'error');
+  });
+}
+
+function updateSchedStatus() {
+  var dot  = document.getElementById('alarm-active-dot');
+  var lbl  = document.getElementById('sched-status');
+  if (schedHour >= 0) {
+    dot.style.display = 'block';
+    lbl.style.color   = '#00C853';
+    lbl.innerHTML     = 'ON &bull; ' +
+      (schedHour < 10 ? '0' : '') + schedHour + ':' +
+      (schedMin  < 10 ? '0' : '') + schedMin;
+  } else {
+    dot.style.display = 'none';
+    lbl.style.color   = '#5B6772';
+    lbl.innerHTML     = 'OFF';
+  }
+}
+
+/* ── BOOT ─────────────────────────────────────────────────────────────────── */
+/* Init report scheduler dropdowns (firing now happens server-side) */
+buildScheduleDropdowns();
+
+/* Fetch categories first, then start polling immediately */
+apiGet('/api/state', function(data) {
+  if (data.categories && data.categories.length) categories   = data.categories;
+  if (data.threshold_orange)  threshOrange = data.threshold_orange;
+  if (data.threshold_red)     threshRed    = data.threshold_red;
+  applyScheduleFromServer(data.schedule);
+  /* Render the first frame right away, then continue polling */
+  pollDashboard();
+}, function() {
+  /* If first load fails, retry in 2s */
+  schedulePoll(2000);
+});
+</script>
+</body>
+</html>

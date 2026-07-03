@@ -1,0 +1,2586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>QC Control Center</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+(function(){
+    try {
+        var raw = localStorage.getItem('qc_control_session');
+        if(!raw){ document.documentElement.classList.add('auth-required'); return; }
+        var session = JSON.parse(raw);
+        if(!session || !session.username) document.documentElement.classList.add('auth-required');
+    } catch(e){
+        document.documentElement.classList.add('auth-required');
+    }
+})();
+</script>
+
+<style>
+
+:root{
+    --blue:#1e3a8a;
+    --blue-mid:#3b82f6;
+    --blue-soft:rgba(59,130,246,0.09);
+    --blue-border:rgba(59,130,246,0.20);
+    --red:#b91c1c;
+    --red-mid:#e11d48;
+    --red-soft:rgba(225,29,72,0.09);
+    --red-border:rgba(225,29,72,0.20);
+    --green:#047857;
+    --green-soft:rgba(4,120,87,0.09);
+    --amber:#b45309;
+    --bg:#eef2f7;
+    --surface:rgba(255,255,255,0.92);
+    --surface-solid:#ffffff;
+    --surface-2:#f8fafc;
+    --border:rgba(148,163,184,0.30);
+    --text:#0f172a;
+    --text-muted:#64748b;
+    --shadow-sm:0 1px 2px rgba(15,23,42,0.04), 0 2px 8px rgba(15,23,42,0.03);
+    --shadow-md:0 4px 24px rgba(15,23,42,0.07);
+    --radius:12px;
+    --body:'Inter',sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html, body{ height:100%; overflow:hidden; }
+
+body{
+    font-family:var(--body);
+    background:var(--bg);
+    color:var(--text);
+    position:relative;
+}
+
+.bg-watermark{
+    position:fixed;
+    inset:-12%;
+    background:url('logo.png') center 38% / min(480px, 52vw) no-repeat;
+    filter:blur(80px) saturate(1.15);
+    opacity:0.065;
+    pointer-events:none;
+    z-index:0;
+}
+
+body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(30,64,175,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30,64,175,0.022) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
+    z-index:0;
+}
+
+body::before{
+    content:'';
+    position:fixed;
+    top:0; left:0; right:0;
+    height:3px;
+    background:linear-gradient(90deg, var(--blue), var(--blue-mid), var(--red-mid), var(--red));
+    z-index:200;
+}
+
+/* ── When logged out: freeze everything except the login card ── */
+html.auth-required .app,
+html.auth-required .bg-watermark,
+html.auth-required body::before,
+html.auth-required body::after {
+    display: none !important;
+}
+
+
+button{ font-family:var(--body); }
+
+.app{ display:flex; flex-direction:column; height:100vh; position:relative; z-index:1; contain:layout style; }
+
+/* NAV */
+.topnav{
+    flex:0 0 auto;
+    height:68px;
+    border-bottom:1px solid var(--border);
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(12px) saturate(1.2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    gap:18px;
+    box-shadow:var(--shadow-sm);
+}
+
+.brand{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+
+.logo-img{ width:68px; height:68px; object-fit:contain; border-radius:6px; }
+
+.brand-text{ font-size:13px; font-weight:700; white-space:nowrap; color:var(--blue); line-height:1.25; }
+
+.nav-tabs{ display:flex; gap:4px; overflow-x:auto; flex:1; }
+
+.nav-tab{
+    background:none; border:none; padding:8px 14px;
+    font-weight:600; font-size:13px; color:#334155;
+    cursor:pointer; border-radius:8px; transition:background 0.16s, color 0.16s, box-shadow 0.16s;
+    white-space:nowrap; border:1px solid transparent;
+}
+.nav-tab:hover{ background:var(--blue-soft); color:var(--blue); }
+.nav-tab.active{
+    background:var(--surface-solid); color:var(--blue);
+    border-color:var(--blue-border);
+    box-shadow:0 1px 4px rgba(59,130,246,0.10);
+}
+
+.status-cluster{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+
+.live-pill{
+    display:flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:1px;
+    color:var(--green); background:var(--green-soft);
+    border:1px solid rgba(21,128,61,0.25); padding:5px 10px; border-radius:20px;
+}
+
+.live-dot{
+    width:6px; height:6px; border-radius:50%; background:var(--green);
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(21,128,61,0.45); }
+    70%{ box-shadow:0 0 0 6px rgba(21,128,61,0); }
+    100%{ box-shadow:0 0 0 0 rgba(21,128,61,0); }
+}
+
+#clock{ font-family:var(--mono); font-size:13.5px; font-weight:600; color:var(--text); }
+#date{ color:#475569; font-size:10px; font-family:var(--mono); }
+.clock-box{ text-align:right; line-height:1.35; }
+
+/* VIEWS */
+.view-container{
+    flex:1 1 auto; min-height:0; padding:14px 20px;
+    display:flex; flex-direction:column;
+}
+
+#view-overview{
+    flex:1 1 auto; min-height:0; overflow:hidden; gap:10px;
+}
+
+.view{ display:none; flex-direction:column; min-height:0; flex:1; gap:14px; }
+.view.active{ display:flex; }
+
+.error-banner{
+    background:var(--red-soft); border:1px solid var(--red-border);
+    color:var(--red); padding:13px 16px; border-radius:10px; font-size:13px;
+    flex:0 0 auto;
+}
+
+/* OVERVIEW */
+.overview-header{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.overview-header h1{ font-size:17px; font-weight:700; letter-spacing:-0.02em; line-height:1.2; }
+.overview-header p{ display:none; }
+.overview-shift{
+    font-family:var(--mono); font-size:10.5px; font-weight:600;
+    color:#475569; background:var(--surface-2);
+    border:1px solid var(--border); padding:5px 10px; border-radius:999px;
+    white-space:nowrap;
+}
+
+.overview-body{
+    flex:1 1 auto; min-height:0; overflow:hidden;
+    display:grid;
+    grid-template-rows:auto minmax(0, 1fr) auto;
+    gap:10px;
+}
+
+.overview-kpi-row{
+    display:grid; grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:10px; flex:0 0 auto;
+}
+.kpi-tile{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:10px 12px;
+    box-shadow:var(--shadow-sm); backdrop-filter:blur(8px);
+}
+.kpi-label{
+    font-size:9px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text-muted); font-weight:700; margin-bottom:4px;
+}
+.kpi-value{
+    font-size:20px; font-weight:800; line-height:1;
+    font-variant-numeric:tabular-nums; color:#0f172a;
+}
+.kpi-sub{
+    margin-top:4px; font-size:10px; color:#64748b; font-weight:500;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+.overview-split{
+    display:grid; grid-template-columns:minmax(0, 1fr) 280px;
+    gap:10px; align-items:stretch; min-height:0; overflow:hidden;
+}
+
+.insights-stack{
+    display:flex; flex-direction:column; gap:10px;
+    min-height:0; overflow:hidden; height:100%;
+}
+
+.compare-panel, .recent-panel{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:12px 14px;
+    box-shadow:var(--shadow-sm); backdrop-filter:blur(8px);
+}
+.compare-panel{ flex:0 0 auto; }
+.recent-panel{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+.panel-title{
+    font-size:12px; font-weight:700; color:#0f172a; margin-bottom:8px;
+    letter-spacing:-0.01em;
+}
+
+.compare-row{ margin-bottom:10px; }
+.compare-row:last-child{ margin-bottom:0; }
+.compare-head{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:5px; font-size:11px; font-weight:600;
+}
+.compare-name{ display:flex; align-items:center; gap:7px; color:#334155; }
+.compare-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.compare-val{ font-family:var(--mono); font-weight:700; color:#0f172a; font-size:11px; }
+.compare-bar{
+    height:7px; background:#e2e8f0; border-radius:999px; overflow:hidden;
+}
+.compare-fill{
+    height:100%; border-radius:999px; transition:width 0.35s ease;
+}
+.compare-foot{
+    margin-top:8px; padding-top:8px;
+    border-top:1px solid rgba(148,163,184,0.22);
+    font-size:10.5px; color:#64748b; line-height:1.4;
+}
+.compare-foot b{ color:#334155; }
+
+.dept-grid{
+    display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:10px; align-content:stretch; min-height:0;
+}
+
+.dept-card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:12px 14px;
+    display:flex; flex-direction:column; gap:8px;
+    transition:box-shadow 0.18s, border-color 0.18s;
+    backdrop-filter:blur(8px);
+    box-shadow:var(--shadow-sm);
+    position:relative; overflow:hidden;
+    min-height:0;
+}
+.dept-card:hover{
+    box-shadow:var(--shadow-md);
+    border-color:var(--blue-border);
+}
+.dept-card::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:var(--dept-accent, var(--blue-mid));
+    border-radius:12px 0 0 12px;
+}
+.dept-card.dept-cutting{ --dept-accent:#2563eb; }
+.dept-card.dept-embro{ --dept-accent:#e11d48; }
+
+.dept-card-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.dept-card-top-left{ display:flex; align-items:center; gap:8px; }
+
+.dept-status{
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.45px; padding:4px 9px; border-radius:999px;
+    border:1px solid transparent; white-space:nowrap;
+}
+.dept-status.ok{ background:var(--green-soft); color:var(--green); border-color:rgba(4,120,87,0.2); }
+.dept-status.watch{ background:rgba(217,119,6,0.10); color:#b45309; border-color:rgba(217,119,6,0.22); }
+.dept-status.alert{ background:var(--red-soft); color:var(--red); border-color:var(--red-border); }
+
+.dept-code{
+    font-family:var(--mono); font-size:10.5px; color:var(--blue);
+    background:var(--blue-soft); padding:3px 7px; border-radius:5px; font-weight:600;
+}
+
+.dept-card-name{ font-size:14px; font-weight:700; }
+.dept-card-metrics{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+.metric{ display:flex; flex-direction:column; }
+.metric-value{ font-size:18px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.metric-label{ font-size:9px; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-top:3px; font-weight:600; }
+
+.dept-card-actions{ display:flex; gap:8px; }
+.dept-card-actions .action-btn{ padding:7px 12px; font-size:12px; }
+
+.dept-card-footer{
+    margin-top:auto;
+    padding-top:6px;
+    border-top:1px solid rgba(148,163,184,0.18);
+    font-size:10px;
+    color:#94a3b8;
+    font-weight:500;
+}
+.dept-card-footer b{
+    color:#64748b;
+    font-weight:600;
+}
+
+.dept-card-insights{
+    display:grid; grid-template-columns:1fr 1fr; gap:6px 10px;
+    padding:8px 10px; background:var(--surface-2);
+    border:1px solid rgba(148,163,184,0.20); border-radius:8px;
+}
+.insight-item{ font-size:10px; color:#64748b; line-height:1.3; }
+.insight-item b{ display:block; color:#0f172a; font-size:11px; font-weight:700; margin-top:1px; }
+
+.recent-list{ display:flex; flex-direction:column; gap:6px; flex:1; min-height:0; overflow:hidden; }
+.recent-item{
+    padding:7px 8px; border-radius:8px;
+    background:var(--surface-2); border:1px solid rgba(148,163,184,0.18);
+    font-size:10.5px; line-height:1.35;
+}
+.recent-item-time{ font-family:var(--mono); font-size:9px; color:#94a3b8; margin-bottom:2px; }
+.recent-item-text{ color:#334155; }
+.recent-item-text b{ color:#1e3a8a; font-weight:700; }
+.recent-empty{ font-size:11px; color:#94a3b8; font-style:italic; padding:4px 2px; }
+
+/* CHART PANEL — overview fit */
+#view-overview .chart-panel{
+    flex:1 1 auto; min-height:0; height:100%;
+    display:flex; flex-direction:column;
+    padding:12px 14px 10px;
+    border-radius:14px;
+}
+#view-overview .chart-panel-header{ margin-bottom:8px; }
+#view-overview .chart-panel-title{ font-size:12.5px; }
+#view-overview .chart-canvas-wrap{
+    flex:1 1 auto; min-height:0; height:auto !important;
+    max-height:none;
+}
+#view-overview .chart-empty{
+    height:100%; min-height:72px; font-size:11.5px;
+}
+
+@media(max-width:1100px){
+    .overview-kpi-row{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .overview-split{ grid-template-columns:1fr; }
+}
+@media(max-width:720px){
+    .dept-grid{ grid-template-columns:1fr; }
+    .overview-kpi-row{ grid-template-columns:1fr 1fr; }
+    .dept-card-metrics{ grid-template-columns:repeat(3, 1fr); }
+}
+
+/* BUTTONS */
+.action-btn{
+    border:none; padding:8px 14px; border-radius:8px;
+    font-weight:600; font-size:12.5px; cursor:pointer;
+    transition:background 0.14s, transform 0.12s, box-shadow 0.14s;
+}
+.action-btn:active{ transform:scale(0.98); }
+.btn-view{ background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue-border); flex:1; }
+.btn-view:hover{ background:rgba(59,130,246,0.16); box-shadow:0 2px 8px rgba(59,130,246,0.12); }
+.btn-update{ background:linear-gradient(180deg, #2563eb, #1e40af); color:#fff; flex:1; box-shadow:0 2px 8px rgba(37,99,235,0.25); }
+.btn-update:hover{ background:linear-gradient(180deg, #1d4ed8, #1e3a8a); }
+.btn-add-emp{ background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue-border); font-weight:700; }
+.btn-add-emp:hover{ background:rgba(59,130,246,0.18); }
+.btn-cancel{ background:none; color:#1e293b; border:1px solid var(--border); font-weight:600; }
+.btn-cancel:hover{ border-color:#94a3b8; color:var(--text); }
+.btn-save{ background:var(--blue); color:#fff; }
+.btn-save:hover{ background:#1e3a8a; }
+.btn-ghost-sm{ background:none; border:none; color:#1e293b; font-size:12.5px; font-weight:700; cursor:pointer; padding:4px 0; }
+.btn-ghost-sm:hover{ color:var(--blue); }
+
+/* DETAIL */
+.detail-header{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; padding-bottom:2px; }
+.detail-back-row{ display:flex; align-items:center; gap:10px; }
+.detail-back-row .btn-ghost-sm{
+    padding:6px 12px; border-radius:8px;
+    background:rgba(255,255,255,0.7); border:1px solid var(--border);
+}
+.detail-back-row .btn-ghost-sm:hover{
+    background:var(--surface-solid); border-color:var(--blue-border);
+}
+.detail-stats{ display:none; }
+
+.table-wrapper{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden;
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column;
+    box-shadow:var(--shadow-md);
+    backdrop-filter:blur(10px);
+}
+
+.table-header{
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    flex:0 0 auto;
+    background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
+}
+
+.table-title-group{ display:flex; align-items:center; gap:10px; }
+.table-title{ font-size:13.5px; font-weight:700; color:#0f172a; }
+
+.live-monitor{
+    background:var(--surface-2); padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    font-size:12px; color:#334155; font-weight:600;
+}
+.live-number{ font-family:var(--mono); font-size:14px; font-weight:700; color:var(--blue-mid); }
+
+.table-scroll{ overflow:auto; flex:1 1 auto; min-height:0; padding:14px 16px 16px; }
+
+.data-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    table-layout:auto;
+}
+
+.data-table thead th{
+    padding:0 4px 8px;
+    font-size:10.5px; text-transform:uppercase;
+    letter-spacing:0.5px; font-weight:700; text-align:center;
+    white-space:nowrap; position:sticky; top:0; z-index:2;
+    vertical-align:bottom; background:transparent;
+    border:none;
+    box-shadow:none;
+}
+
+.data-table thead th .th-inner{
+    display:block;
+    padding:10px 12px;
+    border-radius:10px 10px 0 0;
+    border:1px solid rgba(15,23,42,0.12);
+    border-bottom:2px solid rgba(15,23,42,0.14);
+    box-shadow:0 1px 3px rgba(15,23,42,0.05);
+}
+
+.data-table thead th.col-employee{
+    text-align:left; left:0; z-index:4;
+    min-width:160px;
+}
+.data-table thead th.col-employee .th-inner{
+    background:linear-gradient(180deg, #e2e8f0, #cbd5e1);
+    color:#0f172a;
+    font-size:11px;
+}
+.data-table thead th.col-total .th-inner{
+    background:linear-gradient(180deg, #c7d2fe, #a5b4fc);
+    color:#1e1b4b;
+    font-size:11px;
+}
+.data-table thead th.cat-header .th-inner{
+    font-size:10px; letter-spacing:0.35px; line-height:1.25;
+    color:#0f172a;
+}
+
+.data-table tbody td,
+.data-table tfoot td{
+    padding:11px 12px;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:15px;
+    font-weight:600;
+    color:#0f172a;
+    border:1px solid rgba(148,163,184,0.32);
+    transition:background 0.12s;
+}
+
+.data-table tbody td.col-employee{
+    text-align:left;
+    font-family:var(--body);
+    font-weight:600;
+    font-size:14.5px;
+    position:sticky; left:0; z-index:1;
+    border-right:2px solid rgba(148,163,184,0.35);
+    min-width:160px;
+}
+
+.data-table tbody tr.row-even td{ background:#f1f5f9; }
+.data-table tbody tr.row-odd td{ background:#ffffff; }
+.data-table tbody tr.row-even td.col-employee{ background:#e8edf4; }
+.data-table tbody tr.row-odd td.col-employee{ background:#ffffff; }
+
+.data-table tbody td.cell-count{ color:#0f172a; font-weight:700; font-size:15px; }
+.data-table tbody td.cell-zero{ color:#64748b; font-weight:500; }
+.data-table tbody td.cell-high{
+    background:#fef3c7 !important;
+    color:#92400e;
+    font-weight:800;
+    border-color:rgba(217,119,6,0.35);
+}
+
+.data-table tbody td.col-total{
+    font-weight:800;
+    font-size:15px;
+    color:#1e1b4b;
+    background:#eef2ff !important;
+    border-left:2px solid rgba(99,102,241,0.25);
+}
+
+.data-table tbody tr:hover td{
+    background:#e0ecff !important;
+    border-color:rgba(59,130,246,0.28);
+}
+.data-table tbody tr:hover td.col-employee{ background:#dbeafe !important; }
+.data-table tbody tr:hover td.col-total{ background:#ddd6fe !important; }
+
+.data-table tfoot td{
+    font-weight:800;
+    position:sticky; bottom:0; z-index:2;
+    font-size:15px;
+    color:#0f172a;
+    background:linear-gradient(180deg, #e2e8f0, #cbd5e1);
+    border-top:2px solid rgba(71,85,105,0.25);
+    box-shadow:0 -3px 10px rgba(15,23,42,0.06);
+    padding:12px;
+}
+.data-table tfoot td:first-child{
+    font-family:var(--body);
+    text-align:left;
+    position:sticky; left:0; z-index:3;
+    border-right:2px solid rgba(148,163,184,0.35);
+}
+.data-table tfoot td.col-foot-total{
+    background:linear-gradient(180deg, #c7d2fe, #a5b4fc);
+    color:#1e1b4b;
+    font-size:16px;
+    border-left:2px solid rgba(99,102,241,0.30);
+}
+
+table{ width:100%; border-collapse:collapse; }
+
+.empty-state{ padding:48px 20px; text-align:center; color:var(--text-muted); font-size:13.5px; font-weight:500; }
+
+/* MODAL */
+.modal{
+    position:fixed; inset:0; background:rgba(15,23,42,0.4);
+    display:none; align-items:center; justify-content:center;
+    z-index:999; padding:16px; backdrop-filter:blur(2px);
+}
+.modal-content{
+    width:96vw; max-width:none; max-height:90vh;
+    background:var(--surface-solid); padding:20px 28px;
+    border:1px solid var(--border); border-radius:16px;
+    display:flex; flex-direction:column; gap:14px;
+    box-shadow:0 24px 64px rgba(15,23,42,0.16);
+    animation:pop 0.15s ease;
+    font-family:var(--body);
+}
+
+@keyframes pop{
+    from{ transform:scale(0.97); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+}
+
+.modal-header{ display:flex; justify-content:space-between; align-items:flex-start; flex:0 0 auto; }
+.modal-eyebrow{ font-family:var(--body); font-size:10px; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:3px; font-weight:600; }
+.modal-header h2{ font-size:17px; font-weight:700; }
+.close-btn{ font-size:22px; line-height:1; cursor:pointer; color:#334155; background:none; border:none; }
+.close-btn:hover{ color:var(--text); }
+
+#consoleBody{ flex:1 1 auto; min-height:0; overflow:auto; border:1px solid var(--border); border-radius:10px; }
+
+.console-table{ width:100%; border-collapse:separate; border-spacing:0; font-family:var(--body); }
+.console-table th{
+    position:sticky; top:0; background:var(--surface-2);
+    font-size:12px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.45px; padding:12px 10px; text-align:center;
+    border-bottom:2px solid var(--border); white-space:nowrap; z-index:1;
+}
+.console-table th:first-child{ text-align:left; color:#0f172a; }
+.console-table td{ padding:10px 10px; text-align:center; border-bottom:1px solid rgba(148,163,184,0.18); }
+.console-table tbody tr:nth-child(even){ background:rgba(248,250,252,0.8); }
+.console-table tbody tr:hover{ background:rgba(59,130,246,0.05); }
+
+.console-name-box{
+    background:#fff; border:1px solid #dde6f0; border-radius:9px;
+    display:flex; align-items:center; min-width:170px;
+}
+.console-name-box .console-input{
+    width:100%; border:none; background:transparent;
+    font-weight:700; font-size:14.5px; color:#0f172a;
+    padding:9px 12px; border-radius:9px;
+}
+.console-name-box .console-input:focus{ box-shadow:0 0 0 2px var(--blue-soft); }
+
+.stepper-group{ display:flex; align-items:center; justify-content:center; gap:6px; }
+.step-btn{
+    width:23px; height:23px; min-width:23px; border-radius:50%; border:none;
+    background:#dbe7fb; color:#1d4ed8; font-weight:700; font-size:15px;
+    line-height:1; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;
+}
+.step-btn:hover{ background:#c3dafc; }
+.step-btn:active{ transform:scale(0.92); }
+
+.console-input{
+    background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:7px 8px; border-radius:6px;
+    outline:none; font-family:var(--body); font-size:14px;
+}
+.console-num{
+    width:50px; text-align:center; font-weight:700;
+    font-size:14px; font-family:var(--mono);
+}
+.console-input:focus{ border-color:var(--blue-mid); box-shadow:0 0 0 2px var(--blue-soft); }
+
+.console-total-cell{ font-weight:700; font-size:15px; color:#0f172a; }
+
+.console-del-btn{
+    background:none; border:none; color:#dc2626; font-size:20px;
+    font-weight:700; cursor:pointer; line-height:1; padding:4px;
+}
+.console-del-btn:hover{ color:#991b1b; transform:scale(1.12); }
+
+.modal-actions{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+/* TOAST */
+.toast{
+    position:fixed; bottom:20px; right:20px; padding:12px 16px;
+    border-radius:9px; font-weight:600; font-size:13px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999;
+    border:1px solid transparent; animation:pop 0.15s ease;
+}
+.toast.success{ background:var(--green-soft); border-color:rgba(21,128,61,0.3); color:var(--green); }
+.toast.error{ background:var(--red-soft); border-color:var(--red-border); color:var(--red); }
+
+tr.new-emp-row td{ background:rgba(59,130,246,0.06); border-top:1px dashed var(--blue-border); }
+
+/* CHART PANEL */
+.chart-panel{
+    flex:0 0 auto;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px 22px 16px;
+    box-shadow:var(--shadow-md);
+    backdrop-filter:blur(10px);
+}
+
+.chart-panel-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; gap:12px; flex-wrap:wrap;
+}
+
+.chart-panel-title{
+    font-size:14px; font-weight:700; color:#0f172a;
+    letter-spacing:-0.01em;
+}
+
+.chart-legend{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+
+.legend-item{
+    display:flex; align-items:center; gap:7px;
+    font-size:11.5px; font-weight:600; color:#475569;
+    padding:4px 10px 4px 8px;
+    background:rgba(248,250,252,0.9);
+    border:1px solid var(--border);
+    border-radius:999px;
+}
+
+.legend-dot{
+    width:8px; height:8px; border-radius:50%;
+    flex-shrink:0;
+    box-shadow:0 0 0 2px rgba(255,255,255,0.9);
+}
+
+.chart-meta{
+    font-family:var(--mono); font-size:10px; color:#94a3b8;
+    white-space:nowrap;
+    padding:4px 10px;
+    background:var(--surface-2);
+    border-radius:999px;
+    border:1px solid var(--border);
+}
+
+.chart-canvas-wrap{
+    position:relative; width:100%; height:128px;
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(255,255,255,0.6) 100%);
+    border:1px solid rgba(148,163,184,0.20);
+    overflow:hidden;
+}
+
+.chart-canvas-wrap canvas{
+    width:100% !important; height:100% !important;
+    display:block;
+}
+
+.chart-empty{
+    display:flex; align-items:center; justify-content:center;
+    height:128px; color:#94a3b8; font-size:12.5px; font-weight:500;
+}
+
+
+.btn-excel{ background:#15803d; color:#fff; }
+.btn-excel:hover{ background:#166534; }
+.btn-reset{ background:var(--red-soft); color:var(--red); border:1px solid var(--red-border); }
+.btn-reset:hover{ background:rgba(239,68,68,0.18); }
+
+@media(prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+
+/* ===== LOGIN OVERLAY ===== */
+#loginOverlay{
+    position:fixed; inset:0; z-index:9999;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(15,23,42,0.50);
+    padding:20px;
+    /* No backdrop-filter here — it forces re-sampling on every keypress.
+       The blur lives on a dedicated child layer below so it never repaints
+       when the user types. */
+}
+html.auth-required #loginOverlay{
+    display:flex;
+}
+
+/* Blur layer: fixed, behind everything, its own compositor tile */
+#loginBlur{
+    position:fixed; inset:0; z-index:9998;
+    display:none;
+    backdrop-filter:blur(10px) brightness(0.55);
+    -webkit-backdrop-filter:blur(10px) brightness(0.55);
+    will-change:transform;   /* promotes to its own layer — never repaints on input events */
+    pointer-events:none;
+}
+html.auth-required #loginBlur{
+    display:block;
+}
+
+#loginOverlay::after{
+    content:'';
+    position:absolute; inset:-10%;
+    background:url('logo.png') center center / min(420px, 50vw) no-repeat;
+    filter:blur(90px);
+    opacity:0.12;
+    pointer-events:none;
+}
+
+/* subtle grid texture on the overlay itself */
+#loginOverlay::before{
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:38px 38px;
+    pointer-events:none;
+}
+
+/* ── outer glow wrapper that creates the ombre border ── */
+.login-glow{
+    width:100%;
+    max-width:360px;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    animation:loginDrop 0.30s cubic-bezier(0.34,1.56,0.64,1) both;
+    will-change:transform, opacity;
+}
+
+@keyframes loginDrop{
+    from{ opacity:0; transform:translateY(-22px) scale(0.96); }
+    to  { opacity:1; transform:translateY(0)     scale(1);    }
+}
+
+/* the ombre border is a pseudo behind the white box */
+.login-glow::before{
+    content:'';
+    position:absolute;
+    inset:-3px;
+    border-radius:22px;
+    background:linear-gradient(
+        170deg,
+        #1e40af 0%,
+        #3b82f6 28%,
+        #a855f7 54%,
+        #ef4444 78%,
+        #b91c1c 100%
+    );
+    z-index:0;
+}
+
+@keyframes haloPulse{
+    0%,100%{ opacity:0.7; }
+    50%{ opacity:1; }
+}
+
+/* ── logo sits above the box, outside the border ── */
+.login-logo-above{
+    position:relative; z-index:2;
+    margin-bottom:-1px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+
+.login-logo-above img{
+    width:72px; height:72px; object-fit:contain;
+    border-radius:14px;
+    border:2px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.08);
+    box-shadow:0 8px 24px rgba(0,0,0,0.40);
+    display:block;
+}
+
+.login-logo-above .logo-fallback-above{
+    width:72px; height:72px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.10);
+    border:2px solid rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.40);
+}
+
+/* ── white login card ── */
+.login-box{
+    position:relative; z-index:1;
+    width:100%;
+    background:#ffffff;
+    border-radius:18px;
+    padding:32px 36px 30px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.32);
+}
+
+.login-title{
+    font-size:21px; font-weight:700; color:var(--text);
+    margin-bottom:3px; text-align:center;
+}
+.login-subtitle{
+    font-size:12.5px; color:#64748b; margin-bottom:24px;
+    text-align:center;
+}
+
+.login-field{ margin-bottom:15px; }
+.login-label{
+    display:block; font-size:11px; font-weight:700;
+    color:#334155; margin-bottom:5px; letter-spacing:0.5px;
+    text-transform:uppercase;
+}
+
+.login-input{
+    width:100%; padding:11px 14px;
+    border:1.5px solid var(--border); border-radius:9px;
+    font-size:14px; font-family:var(--body); color:var(--text);
+    background:#f8fafc; outline:none;
+    transition:border-color 0.15s, box-shadow 0.15s;
+}
+.login-input:focus{
+    border-color:var(--blue-mid);
+    box-shadow:0 0 0 3px var(--blue-soft);
+    background:#fff;
+}
+.login-input.error{ border-color:var(--red-mid); box-shadow:0 0 0 3px var(--red-soft); }
+
+.login-error{
+    background:var(--red-soft); border:1px solid var(--red-border);
+    color:var(--red); padding:10px 14px; border-radius:8px;
+    font-size:12.5px; font-weight:600; margin-bottom:14px;
+    display:none;
+}
+
+.login-btn{
+    width:100%; padding:12px;
+    background:linear-gradient(90deg, var(--blue) 0%, #6366f1 50%, var(--red-mid) 100%);
+    color:#fff;
+    border:none; border-radius:9px;
+    font-size:14.5px; font-weight:700; font-family:var(--body);
+    cursor:pointer;
+    transition:opacity 0.14s, transform 0.1s;
+    margin-top:6px;
+    letter-spacing:0.3px;
+}
+.login-btn:hover{ opacity:0.88; }
+.login-btn:active{ transform:scale(0.98); }
+.login-btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
+.login-footer{
+    text-align:center; margin-top:18px;
+    font-size:11px; color:#94a3b8; font-weight:500;
+}
+
+/* User menu (top-left cog) */
+.user-menu-wrap{
+    position:relative;
+    flex-shrink:0;
+    display:none;
+    align-items:center;
+}
+.user-menu-btn{
+    display:flex; align-items:center; gap:7px;
+    background:var(--surface-2); border:1px solid var(--border);
+    padding:6px 12px 6px 10px; border-radius:10px;
+    font-size:12.5px; font-weight:600; color:#334155;
+    cursor:pointer; transition:0.14s;
+}
+.user-menu-btn:hover, .user-menu-wrap.open .user-menu-btn{
+    border-color:var(--blue-border); color:var(--blue);
+    background:#fff;
+}
+.user-menu-btn svg.cog-icon{ opacity:0.72; flex-shrink:0; }
+.user-menu-caret{
+    font-size:9px; opacity:0.55; margin-left:2px;
+}
+.user-menu-dropdown{
+    display:none;
+    position:absolute; top:calc(100% + 6px); right:0; left:auto;
+    min-width:148px;
+    background:var(--surface-solid);
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.12);
+    overflow:hidden; z-index:300;
+    padding:4px;
+}
+.user-menu-wrap.open .user-menu-dropdown{ display:block; }
+.user-menu-item{
+    display:flex; align-items:center; gap:8px;
+    width:100%; text-align:left;
+    background:none; border:none;
+    padding:9px 12px; border-radius:7px;
+    font-size:12.5px; font-weight:600; color:#334155;
+    cursor:pointer; font-family:var(--body);
+}
+.user-menu-item:hover{ background:var(--blue-soft); color:var(--blue); }
+.user-menu-item.danger:hover{ background:var(--red-soft); color:var(--red); }
+
+/* Activity logs modal */
+.logs-modal-content{ max-width:920px; width:94vw; }
+.logs-body{
+    flex:1 1 auto; min-height:0; max-height:58vh;
+    overflow:auto; border:1px solid var(--border);
+    border-radius:10px; background:var(--surface-2);
+}
+.logs-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.logs-table th{
+    position:sticky; top:0; z-index:1;
+    background:#e8edf4; padding:10px 12px;
+    text-align:left; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:0.45px; color:#475569; font-weight:700;
+    border-bottom:1px solid var(--border);
+}
+.logs-table td{
+    padding:10px 12px; border-bottom:1px solid rgba(148,163,184,0.20);
+    vertical-align:top; color:#0f172a;
+}
+.logs-table tbody tr:nth-child(even) td{ background:rgba(255,255,255,0.55); }
+.logs-table tbody tr:hover td{ background:rgba(59,130,246,0.05); }
+.logs-time{ font-family:var(--mono); font-size:11px; color:#64748b; white-space:nowrap; }
+.logs-user{ font-weight:700; color:#1e3a8a; }
+.logs-dept{
+    font-family:var(--mono); font-size:10px; font-weight:700;
+    padding:3px 7px; border-radius:999px;
+    background:var(--blue-soft); color:var(--blue);
+}
+.logs-action{
+    font-size:10.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.4px; color:#64748b;
+}
+.logs-detail{ color:#334155; line-height:1.45; font-size:12px; }
+.logs-empty{
+    padding:40px 16px; text-align:center;
+    color:var(--text-muted); font-size:13px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="bg-watermark" aria-hidden="true"></div>
+
+<div class="app">
+
+    <div class="topnav">
+        <div class="brand">
+            <img src="logo.png" class="logo-img" alt="Logo"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div style="display:none;width:68px;height:68px;background:var(--blue-soft);border:1px solid var(--blue-border);border-radius:8px;align-items:center;justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="#1e40af" stroke-width="1.8"/>
+                    <path d="M8 12l3 3 5-5" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="brand-text">QC Control<br>Center</div>
+        </div>
+
+        <div class="nav-tabs" id="navTabs"></div>
+
+        <div class="status-cluster">
+            <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+            <div class="clock-box">
+                <div id="clock">00:00:00</div>
+                <div id="date">Loading…</div>
+            </div>
+            <div class="user-menu-wrap" id="userMenuWrap">
+                <button class="user-menu-btn" id="userMenuBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                    <svg class="cog-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span id="userMenuLabel">User</span>
+                    <span class="user-menu-caret">▾</span>
+                </button>
+                <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <button class="user-menu-item" type="button" onclick="openLogsModal()">Logs</button>
+                    <button class="user-menu-item danger" type="button" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="view-container">
+
+        <div class="error-banner" id="errorBanner" style="display:none;"></div>
+
+        <!-- OVERVIEW -->
+        <div class="view active" id="view-overview">
+            <div class="overview-header">
+                <div>
+                    <h1>Overview</h1>
+                    <p>Live snapshot across all departments — counts refresh every second.</p>
+                </div>
+                <div class="overview-shift" id="overviewShift">—</div>
+            </div>
+
+            <div class="overview-body">
+                <div class="overview-kpi-row" id="overviewKpiRow"></div>
+
+                <div class="overview-split">
+                    <div class="chart-panel" id="chartPanel">
+                        <div class="chart-panel-header">
+                            <span class="chart-panel-title">Daily Defect Activity — Hourly</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#2563eb;"></div>
+                                    CUTTING
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#e11d48;"></div>
+                                    EMBRO
+                                </div>
+                                <span class="chart-meta" id="chartResetLabel">Resets at 06:00</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-wrap" id="chartWrap">
+                            <div class="chart-empty" id="chartEmpty">No save events yet today — data will appear after the first update.</div>
+                            <canvas id="activityChart" style="display:none;"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="insights-stack">
+                        <div class="compare-panel" id="deptComparePanel"></div>
+                        <div class="recent-panel">
+                            <div class="panel-title">Recent Activity</div>
+                            <div class="recent-list" id="recentActivityList">
+                                <div class="recent-empty">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dept-grid" id="deptGrid"></div>
+            </div>
+        </div>
+
+        <!-- DETAIL -->
+        <div class="view" id="view-detail">
+            <div class="detail-header">
+                <div class="detail-back-row">
+                    <button class="btn-ghost-sm" onclick="location.hash='#/'">&larr; Overview</button>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="action-btn btn-reset" id="detailResetBtn">↺ Reset</button>
+                    <button class="action-btn btn-excel" id="detailExportBtn">↓ Export Excel</button>
+                    <button class="action-btn btn-update" style="flex:none;" id="detailUpdateBtn">Update</button>
+                </div>
+            </div>
+
+            <div class="detail-stats">
+                <div class="stat-chip">Employees&nbsp;<b id="detailEmpCount">0</b></div>
+                <div class="stat-chip">Defects logged&nbsp;<b id="detailDefectCount">0</b></div>
+                <div class="stat-chip">Most frequent&nbsp;<b id="detailTopCat">—</b></div>
+            </div>
+
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="table-title-group">
+                        <span class="dept-code" id="detailCode"></span>
+                        <span class="table-title" id="detailTableTitle">Inspection log</span>
+                    </div>
+                    <div class="live-monitor">Live total: <span class="live-number" id="detailLiveTotal">0</span></div>
+                </div>
+                <div class="table-scroll">
+                    <div id="detailTableContainer"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Dedicated blur layer — sits behind loginOverlay on its own compositor tile.
+     Keeping backdrop-filter here prevents it from repainting when the user types. -->
+<div id="loginBlur" aria-hidden="true"></div>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="loginOverlay">
+    <div class="login-glow">
+
+        <!-- Logo floats above the card -->
+        <div class="login-logo-above">
+            <img src="logo.png" alt="Logo"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="logo-fallback-above" style="display:none;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.80)" stroke-width="1.8"/>
+                    <path d="M8 12l3 3 5-5" stroke="rgba(255,255,255,0.80)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- White login card -->
+        <div class="login-box">
+            <div class="login-title">QC Control Center</div>
+            <div class="login-subtitle">Sign in to access the dashboard</div>
+
+            <div class="login-error" id="loginError">Incorrect username or password.</div>
+
+            <div class="login-field">
+                <label class="login-label" for="loginUser">Username</label>
+                <input class="login-input" type="text" id="loginUser"
+                       placeholder="Enter username" autocomplete="username" spellcheck="false">
+            </div>
+
+            <div class="login-field">
+                <label class="login-label" for="loginPass">Password</label>
+                <input class="login-input" type="password" id="loginPass"
+                       placeholder="Enter password" autocomplete="current-password">
+            </div>
+
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+
+            <div class="login-footer">QC Control Center &mdash; Authorized access only</div>
+        </div>
+    </div>
+</div>
+
+<!-- LOGS MODAL -->
+<div class="modal" id="logsModal">
+    <div class="modal-content logs-modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Audit trail</div>
+                <h2>Activity Logs</h2>
+            </div>
+            <button class="close-btn" onclick="closeLogsModal()" aria-label="Close">×</button>
+        </div>
+        <div id="logsBody" class="logs-body">
+            <div class="logs-empty">Loading logs…</div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Edit console</div>
+                <h2 id="consoleDeptName">Department</h2>
+            </div>
+            <button class="close-btn" onclick="closeModal()" aria-label="Close">×</button>
+        </div>
+        <div id="consoleBody"></div>
+        <div class="modal-actions">
+            <button class="action-btn btn-add-emp" onclick="addEmployeeRow()">+ Add Employee</button>
+            <div style="flex:1;"></div>
+            <button class="action-btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="action-btn btn-save" onclick="saveConsole()">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+let allDepartments = {};
+let currentView = 'overview';
+let currentDepartment = null;
+let currentConsoleDept = null;
+let currentUsername = null;
+let deletedConsoleRows = new Set();
+const DEPT_CODES = {};
+
+function debounce(fn, delay){
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+
+// ── Auth gate ────────────────────────────────────────────────────────────────
+// All live-refresh intervals are created ONLY after login and cleared on logout.
+// Nothing polls the server or re-renders while the user isn't authenticated.
+let isLoggedIn = false;
+let _refreshInterval  = null;   // 1 s dept poll
+let _chartInterval    = null;   // 5 s chart poll
+let _clockInterval    = null;   // 1 s clock tick
+
+// Distinct color per defect category column in the edit console, cycling
+// if there are more categories than colors.
+const CONSOLE_COLORS = ['#c89b1c','#a78bda','#16a34a','#2563eb','#ea7c1f','#dc2626','#0d9488','#7c3aed','#c2410c'];
+function formatCatLabel(cat){ return cat.replace(/_/g, ' '); }
+
+/**
+ * Case-insensitive defect value lookup.
+ * The tray app may write lowercase keys (wrong_color) while the admin
+ * dashboard expects uppercase (WRONG_COLOR). This bridges that gap on
+ * the client side so the edit modal always shows the correct counts
+ * even if stale data reaches the browser before the server normalises it.
+ */
+function getDefectVal(defects, cat){
+    if(!defects) return 0;
+    if(cat in defects) return parseInt(defects[cat]) || 0;
+    const upper = cat.toUpperCase();
+    for(const k of Object.keys(defects)){
+        if(k.toUpperCase() === upper) return parseInt(defects[k]) || 0;
+    }
+    return 0;
+}
+
+/* ===== API ===== */
+
+async function fetchDepartments(){
+    const res = await fetch('/api/departments');
+    if(!res.ok) throw new Error('Server responded ' + res.status);
+    return res.json();
+}
+
+async function pushUpdate(department, employees){
+    const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            department,
+            employees,
+            updated_by: getCurrentUser()
+        })
+    });
+    const body = await res.json().catch(() => ({}));
+    if(!res.ok || body.ok === false) throw new Error(body.error || 'Server error');
+    return body;
+}
+
+/* ===== EXPORT TO EXCEL ===== */
+
+async function exportDepartment(dept){
+    try {
+        const res = await fetch('/api/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ department: dept })
+        });
+
+        if(!res.ok){
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || 'Export failed');
+        }
+
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : (dept + '_defects.xlsx');
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        showToast('Excel file downloaded.', 'success');
+    } catch(e) {
+        showToast("Couldn't export — " + e.message, 'error');
+    }
+}
+
+/* ===== RESET COUNTERS ===== */
+
+async function resetDepartment(dept){
+    if(!confirm('Reset ALL counters for ' + dept + ' to zero? This cannot be undone.')) return;
+
+    try {
+        const res = await fetch('/api/reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                department: dept,
+                updated_by: getCurrentUser()
+            })
+        });
+        const body = await res.json().catch(() => ({}));
+        if(!res.ok || body.ok === false) throw new Error(body.error || 'Reset failed');
+
+        allDepartments = await fetchDepartments();
+
+        if(currentView === 'overview') renderOverviewFull();
+        if(currentView === 'detail' && currentDepartment === dept){
+            renderDetailStats(dept);
+            renderDetailTable(dept);
+        }
+
+        showToast('Counters reset for ' + dept + '.', 'success');
+    } catch(e) {
+        showToast("Couldn't reset — " + e.message, 'error');
+    }
+}
+
+/* ===== CLOCK ===== */
+
+function updateClock(){
+    const now = new Date();
+    document.getElementById('clock').innerText = now.toLocaleTimeString();
+    document.getElementById('date').innerText = now.toDateString();
+}
+
+/* ===== LOAD ===== */
+
+async function loadDepartments(){
+    const banner = document.getElementById('errorBanner');
+    try {
+        allDepartments = await fetchDepartments();
+        banner.style.display = 'none';
+    } catch(e) {
+        banner.style.display = 'block';
+        banner.innerText = "Cannot reach the QC server. Make sure admin_server.py is running and open this page at http://localhost:5050";
+        return;
+    }
+    Object.keys(allDepartments).forEach(dept => {
+        DEPT_CODES[dept] = dept.slice(0,2).toUpperCase();
+    });
+    renderNavTabs();
+    fetchChartLog();
+    route();
+}
+
+/* ===== HELPERS ===== */
+
+function deptStats(dept){
+    const employees = (allDepartments[dept] && allDepartments[dept].employees) || [];
+    let total = 0;
+    employees.forEach(emp => Object.values(emp.defects).forEach(n => total += n));
+    return { employeeCount: employees.length, total };
+}
+
+function topCategory(dept){
+    const info = topCategoryInfo(dept);
+    return info.value > 0 ? info.label + ' (' + info.value + ')' : '—';
+}
+
+function defectValue(defects, cat){
+    if(!defects) return 0;
+    const key = Object.keys(defects).find(k => k.toUpperCase() === String(cat).toUpperCase());
+    return key ? (parseInt(defects[key]) || 0) : 0;
+}
+
+function topCategoryInfo(dept){
+    const employees = (allDepartments[dept] && allDepartments[dept].employees) || [];
+    if(employees.length === 0) return { label: '—', value: 0 };
+    const categories = getDeptCategories(dept, employees);
+    let best = null, bestVal = -1;
+    categories.forEach(cat => {
+        const sum = employees.reduce((acc, emp) => acc + defectValue(emp.defects, cat), 0);
+        if(sum > bestVal){ bestVal = sum; best = cat; }
+    });
+    return {
+        label: best ? best.replace(/_/g, ' ') : '—',
+        value: Math.max(0, bestVal)
+    };
+}
+
+function deptStatusLevel(total){
+    if(total > 25) return { cls: 'alert', text: 'Critical' };
+    if(total > 12) return { cls: 'watch', text: 'Watch' };
+    return { cls: 'ok', text: 'Clear' };
+}
+
+function getShiftLabel(){
+    const hour = new Date().getHours();
+    return (hour >= 6 && hour < 18) ? 'Morning shift · 06:00 – 18:00' : 'Night shift · 18:00 – 06:00';
+}
+
+function getOverviewSummary(){
+    const depts = Object.keys(allDepartments);
+    let combinedDefects = 0, combinedEmployees = 0, leader = '—', leaderVal = -1;
+
+    depts.forEach(dept => {
+        const { employeeCount, total } = deptStats(dept);
+        combinedDefects += total;
+        combinedEmployees += employeeCount;
+        if(total > leaderVal){ leaderVal = total; leader = dept; }
+    });
+
+    const savesToday = (chartLog.entries || []).length;
+    return { depts, combinedDefects, combinedEmployees, leader, leaderVal, savesToday };
+}
+
+function formatAuditTimestamp(iso){
+    if(!iso) return '—';
+    try {
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, {
+            month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', second: '2-digit'
+        });
+    } catch(e){
+        return iso;
+    }
+}
+
+function formatCardUpdatedBy(dept){
+    const data = allDepartments[dept] || {};
+    const by = (data.last_updated_by || '').trim();
+    if(by) return 'Last updated by: <b>' + by + '</b>';
+    if(data.last_updated) return 'Last updated via <b>QC station</b>';
+    return 'Last updated by: <b>—</b>';
+}
+
+let auditLogCache = { entries: [] };
+let auditLogFetchedAt = 0;
+
+async function refreshAuditLogCache(force){
+    if(!force && Date.now() - auditLogFetchedAt < 8000) return;
+    try {
+        const data = await fetchAuditLog();
+        auditLogCache = data;
+        auditLogFetchedAt = Date.now();
+    } catch(e){ /* ignore */ }
+}
+
+function renderOverviewKpis(s){
+    const row = document.getElementById('overviewKpiRow');
+    if(!row) return;
+    if(!s) s = getOverviewSummary();
+    const avgPerOp = s.combinedEmployees ? (s.combinedDefects / s.combinedEmployees).toFixed(1) : '0.0';
+    const leaderText = s.leaderVal >= 0 ? s.leader + ' (' + s.leaderVal + ')' : '—';
+
+    row.innerHTML =
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Combined defects</div>' +
+            '<div class="kpi-value">' + s.combinedDefects + '</div>' +
+            '<div class="kpi-sub">Across ' + s.depts.length + ' departments today</div>' +
+        '</div>' +
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Operators tracked</div>' +
+            '<div class="kpi-value">' + s.combinedEmployees + '</div>' +
+            '<div class="kpi-sub">Avg ' + avgPerOp + ' defects per operator</div>' +
+        '</div>' +
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Highest department</div>' +
+            '<div class="kpi-value" style="font-size:20px;padding-top:4px;">' + (s.leaderVal > 0 ? s.leader : '—') + '</div>' +
+            '<div class="kpi-sub">' + (s.leaderVal > 0 ? s.leaderVal + ' defects logged' : 'All departments clear') + '</div>' +
+        '</div>' +
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Saves today</div>' +
+            '<div class="kpi-value">' + s.savesToday + '</div>' +
+            '<div class="kpi-sub">Chart log · resets 06:00</div>' +
+        '</div>';
+}
+
+function renderDeptCompare(s){
+    const panel = document.getElementById('deptComparePanel');
+    if(!panel) return;
+
+    const depts = Object.keys(allDepartments);
+    const totals = depts.map(dept => ({ dept, ...deptStats(dept) }));
+    const maxTotal = Math.max(1, ...totals.map(t => t.total));
+    const combined = s ? s.combinedDefects : totals.reduce((a, t) => a + t.total, 0);
+
+    const colors = { CUTTING: '#2563eb', EMBRO: '#e11d48' };
+
+    let html = '<div class="panel-title">Department Comparison</div>';
+    totals.forEach(item => {
+        const pct = combined > 0 ? Math.round(item.total / combined * 100) : 0;
+        const barPct = Math.max(4, Math.round(item.total / maxTotal * 100));
+        const color = colors[item.dept] || '#64748b';
+        html +=
+            '<div class="compare-row">' +
+                '<div class="compare-head">' +
+                    '<span class="compare-name"><span class="compare-dot" style="background:' + color + ';"></span>' + item.dept + '</span>' +
+                    '<span class="compare-val">' + item.total + ' <span style="color:#94a3b8;font-weight:500;">(' + pct + '%)</span></span>' +
+                '</div>' +
+                '<div class="compare-bar"><div class="compare-fill" style="width:' + barPct + '%;background:' + color + ';"></div></div>' +
+            '</div>';
+    });
+
+    const note = combined === 0
+        ? 'Both departments are currently at <b>zero defects</b>.'
+        : (totals[0].total === totals[1]?.total
+            ? 'Both departments are <b>tied</b> at ' + totals[0].total + ' defects.'
+            : 'Plant total: <b>' + combined + '</b> defects logged today.');
+
+    html += '<div class="compare-foot">' + note + '</div>';
+    panel.innerHTML = html;
+}
+
+function renderRecentActivity(){
+    const list = document.getElementById('recentActivityList');
+    if(!list) return;
+
+    const entries = (auditLogCache.entries || []).slice(0, 3);
+    if(!entries.length){
+        list.innerHTML = '<div class="recent-empty">No monitor saves logged yet today.</div>';
+        return;
+    }
+
+    list.innerHTML = entries.map(entry => {
+        const when = formatAuditTimestamp(entry.timestamp);
+        const who  = entry.user || 'unknown';
+        const dept = entry.department || '—';
+        const detail = entry.summary || entry.action || 'update';
+        return '<div class="recent-item">' +
+            '<div class="recent-item-time">' + when + '</div>' +
+            '<div class="recent-item-text"><b>' + who + '</b> · ' + dept + ' — ' + detail + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function renderOverviewCards(s){
+    const grid = document.getElementById('deptGrid');
+    if(!grid) return;
+    grid.innerHTML = '';
+
+    const summary = s || getOverviewSummary();
+
+    Object.keys(allDepartments).forEach(dept => {
+        const { employeeCount, total } = deptStats(dept);
+        const card = document.createElement('div');
+        card.className = 'dept-card dept-' + dept.toLowerCase();
+
+        const color = total > 25 ? 'var(--red-mid)' : total > 12 ? '#d97706' : 'var(--green)';
+        const status = deptStatusLevel(total);
+        const topCat = topCategoryInfo(dept);
+        const avg = employeeCount ? (total / employeeCount).toFixed(1) : '0.0';
+        const share = summary.combinedDefects > 0 ? Math.round(total / summary.combinedDefects * 100) : 0;
+        const data = allDepartments[dept] || {};
+        const updatedAt = data.last_updated ? formatAuditTimestamp(data.last_updated) : '—';
+
+        card.innerHTML =
+            '<div class="dept-card-top">' +
+                '<div class="dept-card-top-left">' +
+                    '<span class="dept-code">' + DEPT_CODES[dept] + '</span>' +
+                    '<span class="dept-card-name">' + dept + '</span>' +
+                '</div>' +
+                '<span class="dept-status ' + status.cls + '">' + status.text + '</span>' +
+            '</div>' +
+            '<div class="dept-card-metrics">' +
+                '<div class="metric">' +
+                    '<span class="metric-value">' + employeeCount + '</span>' +
+                    '<span class="metric-label">Operators</span>' +
+                '</div>' +
+                '<div class="metric">' +
+                    '<span class="metric-value" style="color:' + color + ';">' + total + '</span>' +
+                    '<span class="metric-label">Defects</span>' +
+                '</div>' +
+                '<div class="metric">' +
+                    '<span class="metric-value">' + avg + '</span>' +
+                    '<span class="metric-label">Avg / op</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="dept-card-insights">' +
+                '<div class="insight-item">Top category<b>' + topCat.label + (topCat.value ? ' (' + topCat.value + ')' : '') + '</b></div>' +
+                '<div class="insight-item">Share of plant<b>' + share + '%</b></div>' +
+                '<div class="insight-item">Last activity<b>' + updatedAt + '</b></div>' +
+                '<div class="insight-item">Updated by<b>' + ((data.last_updated_by || '').trim() || '—') + '</b></div>' +
+            '</div>' +
+            '<div class="dept-card-actions">' +
+                '<button class="action-btn btn-view">View log</button>' +
+                '<button class="action-btn btn-update">Update</button>' +
+            '</div>' +
+            '<div class="dept-card-footer">' + formatCardUpdatedBy(dept) + '</div>';
+
+        card.querySelector('.btn-view').onclick = () => { location.hash = '#/dept/' + encodeURIComponent(dept); };
+        card.querySelector('.btn-update').onclick = () => openEditConsole(dept);
+        grid.appendChild(card);
+    });
+}
+
+function renderOverview(){
+    const shiftEl = document.getElementById('overviewShift');
+    if(shiftEl) shiftEl.textContent = getShiftLabel();
+    const s = getOverviewSummary();
+    renderOverviewKpis(s);
+    renderDeptCompare(s);
+    renderOverviewCards(s);
+    renderRecentActivity();
+    if(chartLog.entries.length) renderActivityChart();
+}
+
+async function renderOverviewFull(){
+    await refreshAuditLogCache(true);
+    renderOverview();
+}
+
+function showOverview(){
+    currentView = 'overview';
+    document.getElementById('view-overview').classList.add('active');
+    document.getElementById('view-detail').classList.remove('active');
+    setActiveTab();
+    renderOverviewFull();
+}
+
+/* ===== ROUTING ===== */
+
+function route(){
+    const hash = location.hash || '#/';
+    const match = hash.match(/^#\/dept\/(.+)$/);
+    if(match){
+        const dept = decodeURIComponent(match[1]);
+        if(allDepartments[dept]){ showDetail(dept); return; }
+    }
+    showOverview();
+}
+
+window.addEventListener('hashchange', route);
+
+function renderNavTabs(){
+    const nav = document.getElementById('navTabs');
+    nav.innerHTML = '';
+
+    const overviewTab = document.createElement('button');
+    overviewTab.className = 'nav-tab';
+    overviewTab.dataset.route = '#/';
+    overviewTab.innerText = 'Overview';
+    overviewTab.onclick = () => location.hash = '#/';
+    nav.appendChild(overviewTab);
+
+    Object.keys(allDepartments).forEach(dept => {
+        const tab = document.createElement('button');
+        tab.className = 'nav-tab';
+        tab.dataset.route = '#/dept/' + encodeURIComponent(dept);
+        tab.innerText = dept;
+        tab.onclick = () => location.hash = '#/dept/' + encodeURIComponent(dept);
+        nav.appendChild(tab);
+    });
+}
+
+function setActiveTab(){
+    const hash = location.hash || '#/';
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.route === hash);
+    });
+}
+
+/* ===== DEPT COLUMN ORDER & COLORS ===== */
+
+const DEPT_CATEGORY_ORDER = {
+    CUTTING: ['WRONG_COLOR','WRONG_SIZE','WRONG_CUT','OFF_SHADE','LOW_QUALITY','WRONG_MATERIAL','OTHERS'],
+    EMBRO:   ['LOW_QUALITY','WRONG_COLOR_THREAD','WRONG_PLACEMENT','WRONG_TEXT_FONT','UNBALANCED','WRONG_SPELLING','OTHERS']
+};
+
+// Header background colors matching the printed sheets
+const DEPT_HEADER_COLORS = {
+    CUTTING: {
+        WRONG_COLOR:    { bg:'#f5c700', color:'#0f172a' },
+        WRONG_SIZE:     { bg:'#c084fc', color:'#0f172a' },
+        WRONG_CUT:      { bg:'#22c55e', color:'#0f172a' },
+        OFF_SHADE:      { bg:'#38bdf8', color:'#0f172a' },
+        LOW_QUALITY:    { bg:'#fb923c', color:'#0f172a' },
+        WRONG_MATERIAL: { bg:'#ef4444', color:'#0f172a' },
+        OTHERS:         { bg:'#2dd4bf', color:'#0f172a' },
+    },
+    EMBRO: {
+        LOW_QUALITY:        { bg:'#f5c700', color:'#0f172a' },
+        WRONG_COLOR_THREAD: { bg:'#c084fc', color:'#0f172a' },
+        WRONG_PLACEMENT:    { bg:'#22c55e', color:'#0f172a' },
+        WRONG_TEXT_FONT:    { bg:'#38bdf8', color:'#0f172a' },
+        UNBALANCED:         { bg:'#fb923c', color:'#0f172a' },
+        WRONG_SPELLING:     { bg:'#ef4444', color:'#0f172a' },
+        OTHERS:             { bg:'#2dd4bf', color:'#0f172a' },
+    }
+};
+
+function getDeptCategories(dept, employees){
+    const order = DEPT_CATEGORY_ORDER[dept];
+    if(order) return order;
+    // fallback: order from data, OTHERS last
+    const raw = employees && employees.length > 0 ? Object.keys(employees[0].defects) : [];
+    const others = raw.filter(c => c === 'OTHERS');
+    return [...raw.filter(c => c !== 'OTHERS'), ...others];
+}
+
+function getHeaderStyle(dept, cat){
+    const map = DEPT_HEADER_COLORS[dept];
+    if(map && map[cat]) return map[cat];
+    return { bg:'var(--surface-2)', color:'#1e293b' };
+}
+
+/* ===== DETAIL ===== */
+
+function showDetail(dept){
+    currentView = 'detail';
+    currentDepartment = dept;
+    document.getElementById('view-overview').classList.remove('active');
+    document.getElementById('view-detail').classList.add('active');
+    setActiveTab();
+    document.getElementById('detailCode').innerText = DEPT_CODES[dept];
+    document.getElementById('detailTableTitle').innerText = 'Inspection log — ' + dept;
+    document.getElementById('detailUpdateBtn').onclick = () => openEditConsole(dept);
+    document.getElementById('detailExportBtn').onclick = () => exportDepartment(dept);
+    document.getElementById('detailResetBtn').onclick  = () => resetDepartment(dept);
+    renderDetailStats(dept);
+    renderDetailTable(dept);
+}
+
+function renderDetailStats(dept){
+    const { employeeCount, total } = deptStats(dept);
+    document.getElementById('detailEmpCount').innerText = employeeCount;
+    document.getElementById('detailDefectCount').innerText = total;
+    document.getElementById('detailLiveTotal').innerText = total;
+    document.getElementById('detailTopCat').innerText = topCategory(dept);
+}
+
+function renderDetailTable(dept){
+    const data = allDepartments[dept];
+    const container = document.getElementById('detailTableContainer');
+
+    if(!data.employees || data.employees.length === 0){
+        container.innerHTML = '<div class="empty-state">No entries logged yet.</div>';
+        return;
+    }
+
+    const categories = getDeptCategories(dept, data.employees);
+    let maxVal = 1;
+    data.employees.forEach(emp => {
+        categories.forEach(cat => { if((emp.defects[cat]||0) > maxVal) maxVal = emp.defects[cat]||0; });
+    });
+    const highThreshold = Math.max(2, Math.ceil(maxVal * 0.55));
+
+    let html = '<table class="data-table"><thead><tr>';
+    html += '<th class="col-employee"><span class="th-inner">Employee</span></th>';
+    categories.forEach(cat => {
+        const hs = getHeaderStyle(dept, cat);
+        const label = cat.replace(/_/g,' ');
+        html += '<th class="cat-header"><span class="th-inner" style="background:' + hs.bg + ';color:' + hs.color + ';">' + label + '</span></th>';
+    });
+    html += '<th class="col-total"><span class="th-inner">Total</span></th></tr></thead><tbody>';
+
+    data.employees.forEach((emp, rowIdx) => {
+        let rowTotal = 0;
+        const rowClass = rowIdx % 2 === 0 ? 'row-odd' : 'row-even';
+        html += '<tr class="' + rowClass + '"><td class="col-employee">' + emp.name + '</td>';
+        categories.forEach(cat => {
+            const v = getDefectVal(emp.defects, cat);
+            rowTotal += v;
+            let cls = 'cell-count';
+            if(v === 0) cls += ' cell-zero';
+            else if(v >= highThreshold) cls += ' cell-high';
+            html += '<td class="' + cls + '">' + v + '</td>';
+        });
+        html += '<td class="col-total">' + rowTotal + '</td></tr>';
+    });
+
+    html += '</tbody><tfoot><tr><td>TOTAL</td>';
+    let grandTotal = 0;
+    categories.forEach(cat => {
+        const sum = data.employees.reduce((acc, emp) => acc + getDefectVal(emp.defects, cat), 0);
+        grandTotal += sum;
+        html += '<td>' + sum + '</td>';
+    });
+    html += '<td class="col-foot-total">' + grandTotal + '</td>';
+    html += '</tr></tfoot></table>';
+    container.innerHTML = html;
+}
+
+/* ===== EDIT CONSOLE ===== */
+
+function openEditConsole(dept){
+    currentConsoleDept = dept;
+    deletedConsoleRows = new Set();
+    const employees = allDepartments[dept].employees || [];
+    document.getElementById('consoleDeptName').innerText = 'Edit console — ' + dept;
+    const body = document.getElementById('consoleBody');
+
+    if(employees.length === 0){
+        body.innerHTML = '<div class="empty-state">No entries yet. Add an employee below.</div>';
+    } else {
+        const categories = getDeptCategories(dept, employees);
+        let html = '<table class="console-table"><thead><tr><th>Employee</th>';
+        categories.forEach(cat => {
+            const hs = getHeaderStyle(dept, cat);
+            html += '<th style="background:' + hs.bg + ';color:' + hs.color + ';">' + formatCatLabel(cat) + '</th>';
+        });
+        html += '<th>Total</th><th></th></tr></thead><tbody>';
+
+        employees.forEach((emp, i) => {
+            const total = Object.values(emp.defects).reduce((a,b) => a + (parseInt(b)||0), 0);
+            html += '<tr data-emp-row="' + i + '">';
+            html += '<td><div class="console-name-box"><input type="text" class="console-input" data-row="' + i + '" data-field="name" value="' + emp.name + '"></div></td>';
+            categories.forEach(cat => {
+                const v = getDefectVal(emp.defects, cat);
+                html += '<td><div class="stepper-group">' +
+                    '<button type="button" class="step-btn" onclick="stepValue(this,-1)">&minus;</button>' +
+                    '<input type="number" min="0" class="console-input console-num" data-row="' + i + '" data-field="' + cat + '" value="' + v + '" oninput="recalcRowTotal(this)">' +
+                    '<button type="button" class="step-btn" onclick="stepValue(this,1)">+</button>' +
+                '</div></td>';
+            });
+            html += '<td class="console-total-cell">' + total + '</td>';
+            html += '<td><button type="button" class="console-del-btn" onclick="deleteConsoleRow(this)" title="Remove employee">&times;</button></td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+    }
+
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function stepValue(btn, delta){
+    const group = btn.closest('.stepper-group');
+    const input = group.querySelector('input.console-num');
+    let v = parseInt(input.value) || 0;
+    v = Math.max(0, v + delta);
+    input.value = v;
+    recalcRowTotal(input);
+}
+
+function recalcRowTotal(inputEl){
+    const tr = inputEl.closest('tr');
+    if(!tr) return;
+    let sum = 0;
+    tr.querySelectorAll('.console-num').forEach(inp => sum += (parseInt(inp.value) || 0));
+    const totalCell = tr.querySelector('.console-total-cell');
+    if(totalCell) totalCell.innerText = sum;
+}
+
+function deleteConsoleRow(btn){
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    if(tr.dataset.empRow !== undefined && tr.dataset.empRow !== ''){
+        deletedConsoleRows.add(parseInt(tr.dataset.empRow));
+    }
+    tr.remove();
+}
+
+function closeModal(){
+    document.getElementById('editModal').style.display = 'none';
+}
+
+function addEmployeeRow(){
+    const dept = currentConsoleDept;
+    const employees = allDepartments[dept].employees || [];
+    if(employees.length === 0){ openEditConsole(dept); return; }
+
+    const categories = getDeptCategories(dept, employees);
+    const table = document.querySelector('#consoleBody .console-table');
+    if(!table){ openEditConsole(dept); return; }
+
+    const tbody = table.querySelector('tbody') || table;
+    const existingRows = tbody.querySelectorAll('tr').length;
+
+    const tr = document.createElement('tr');
+    tr.className = 'new-emp-row';
+    let rowHtml = '<td><div class="console-name-box"><input type="text" class="console-input new-emp-input" data-newrow="' + existingRows + '" data-field="name" placeholder="Employee name"></div></td>';
+    categories.forEach(cat => {
+        rowHtml += '<td><div class="stepper-group">' +
+            '<button type="button" class="step-btn" onclick="stepValue(this,-1)">&minus;</button>' +
+            '<input type="number" min="0" class="console-input console-num new-emp-input" data-newrow="' + existingRows + '" data-field="' + cat + '" value="0" oninput="recalcRowTotal(this)">' +
+            '<button type="button" class="step-btn" onclick="stepValue(this,1)">+</button>' +
+        '</div></td>';
+    });
+    rowHtml += '<td class="console-total-cell">0</td>';
+    rowHtml += '<td><button type="button" class="console-del-btn" onclick="deleteConsoleRow(this)" title="Remove row">&times;</button></td>';
+    tr.innerHTML = rowHtml;
+
+    tbody.appendChild(tr);
+    tr.querySelector('input[data-field="name"]').focus();
+}
+
+async function saveConsole(){
+    const dept = currentConsoleDept;
+    const employees = allDepartments[dept].employees || [];
+    const categories = getDeptCategories(dept, employees);
+
+    // Build the updated employee list entirely from the current DOM state.
+    // Previously we started from allDepartments[dept].employees and patched
+    // it — but if the tray app or another session updated the file between
+    // when the modal opened and when Save was clicked, those values would
+    // overwrite the in-DOM edits.  Reading straight from the DOM is correct
+    // because the modal shows every cell for every employee.
+
+    // --- existing (non-new) rows ---
+    const kept = [];
+    const rows = document.querySelectorAll('#consoleBody .console-table tbody tr[data-emp-row]');
+    rows.forEach(tr => {
+        const rowIdx = parseInt(tr.dataset.empRow);
+        if(deletedConsoleRows.has(rowIdx)) return;
+        const nameInput = tr.querySelector('.console-input[data-field="name"]');
+        const name = (nameInput ? nameInput.value.trim() : '') || (employees[rowIdx] ? employees[rowIdx].name : '');
+        const defects = {};
+        categories.forEach(cat => {
+            const inp = tr.querySelector('.console-input[data-field="' + cat + '"]');
+            defects[cat] = inp ? (parseInt(inp.value) || 0) : getDefectVal((employees[rowIdx] || {}).defects, cat);
+        });
+        kept.push({ name, defects });
+    });
+
+    // --- new rows ---
+    const newRowMap = {};
+    document.querySelectorAll('#consoleBody .new-emp-input').forEach(input => {
+        const idx = input.dataset.newrow;
+        if(!newRowMap[idx]) newRowMap[idx] = { name:'', defects:{} };
+        const field = input.dataset.field;
+        if(field === 'name'){
+            newRowMap[idx].name = input.value.trim();
+        } else {
+            newRowMap[idx].defects[field] = parseInt(input.value) || 0;
+        }
+    });
+
+    Object.values(newRowMap).forEach(row => {
+        if(row.name){
+            categories.forEach(cat => { if(!(cat in row.defects)) row.defects[cat] = 0; });
+            kept.push(row);
+        }
+    });
+
+    try {
+        await pushUpdate(dept, kept);
+        allDepartments = await fetchDepartments();
+        closeModal();
+        if(currentView === 'overview') renderOverviewFull();
+        if(currentView === 'detail' && currentDepartment === dept){
+            renderDetailStats(dept);
+            renderDetailTable(dept);
+        }
+        fetchChartLog();
+        showToast('Changes saved.', 'success');
+    } catch(e) {
+        showToast("Couldn't save — " + e.message, 'error');
+    }
+}
+
+/* ===== TOAST ===== */
+
+function showToast(message, type){
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + (type === 'error' ? 'error' : 'success');
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2800);
+}
+
+/* ===== MODAL DISMISS ===== */
+
+window.addEventListener('click', e => {
+    const modal = document.getElementById('editModal');
+    if(e.target === modal) closeModal();
+    const logsModal = document.getElementById('logsModal');
+    if(e.target === logsModal) closeLogsModal();
+});
+window.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+        closeModal();
+        closeLogsModal();
+    }
+});
+
+/* ===== ACTIVITY LOGS ===== */
+
+function formatLogChanges(entry){
+    if(entry.action === 'reset'){
+        const prev = (entry.changes && entry.changes[0] && entry.changes[0].previous_total);
+        if(typeof prev === 'number' && prev > 0) return 'Reset all counters from ' + prev + ' to 0';
+        return 'Reset all counters to 0';
+    }
+
+    const parts = [];
+    (entry.changes || []).forEach(item => {
+        if(item.type === 'employee_added'){
+            parts.push('Added employee: ' + item.employee);
+        } else if(item.type === 'employee_removed'){
+            parts.push('Removed employee: ' + item.employee);
+        } else if(item.type === 'employee_renamed'){
+            parts.push('Renamed ' + item.from + ' → ' + item.to);
+        } else if(item.type === 'defects_updated'){
+            Object.keys(item.changes || {}).forEach(key => {
+                const ch = item.changes[key];
+                const label = key.replace(/_/g, ' ');
+                parts.push(item.employee + ' · ' + label + ': ' + ch.from + ' → ' + ch.to);
+            });
+        }
+    });
+
+    return parts.length ? parts.join('<br>') : (entry.summary || 'Changes saved');
+}
+
+async function fetchAuditLog(){
+    const res = await fetch('/api/audit-log');
+    if(!res.ok) throw new Error('Could not load logs');
+    return res.json();
+}
+
+async function openLogsModal(){
+    closeUserMenu();
+    const modal = document.getElementById('logsModal');
+    const body  = document.getElementById('logsBody');
+    modal.style.display = 'flex';
+    body.innerHTML = '<div class="logs-empty">Loading logs…</div>';
+
+    try {
+        const data = await fetchAuditLog();
+        const entries = data.entries || [];
+        if(!entries.length){
+            body.innerHTML = '<div class="logs-empty">No activity logged yet. Saves from the monitor will appear here.</div>';
+            return;
+        }
+
+        let html = '<table class="logs-table"><thead><tr>' +
+            '<th>When</th><th>User</th><th>Dept</th><th>Action</th><th>What changed</th>' +
+            '</tr></thead><tbody>';
+
+        entries.forEach(entry => {
+            html += '<tr>' +
+                '<td class="logs-time">' + formatAuditTimestamp(entry.timestamp) + '</td>' +
+                '<td class="logs-user">' + (entry.user || '—') + '</td>' +
+                '<td><span class="logs-dept">' + (entry.department || '—') + '</span></td>' +
+                '<td class="logs-action">' + (entry.action || 'update') + '</td>' +
+                '<td class="logs-detail">' + formatLogChanges(entry) + '</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+    } catch(e){
+        body.innerHTML = '<div class="logs-empty">Could not load logs — ' + e.message + '</div>';
+    }
+}
+
+function closeLogsModal(){
+    const modal = document.getElementById('logsModal');
+    if(modal) modal.style.display = 'none';
+}
+
+/* ===== ACTIVITY CHART ===== */
+
+const DEPT_COLORS = {
+    CUTTING: { line: '#2563eb', fillTop: 'rgba(37,99,235,0.22)', fillBot: 'rgba(37,99,235,0.02)', glow: 'rgba(37,99,235,0.35)' },
+    EMBRO:   { line: '#e11d48', fillTop: 'rgba(225,29,72,0.20)', fillBot: 'rgba(225,29,72,0.02)', glow: 'rgba(225,29,72,0.30)' }
+};
+const DEPT_ORDER = ['CUTTING', 'EMBRO'];
+
+let chartLog = { entries: [] };
+
+async function fetchChartLog(){
+    if(!isLoggedIn) return;
+    try {
+        const res = await fetch('/api/chart-log');
+        if(!res.ok) return;
+        chartLog = await res.json();
+        renderActivityChart();
+        if(currentView === 'overview') renderOverviewKpis();
+    } catch(e){ /* server not ready */ }
+}
+
+function renderActivityChart(){
+    const entries = (chartLog.entries || []);
+    const canvas  = document.getElementById('activityChart');
+    const empty   = document.getElementById('chartEmpty');
+
+    if(entries.length === 0){
+        canvas.style.display = 'none';
+        empty.style.display  = 'flex';
+        return;
+    }
+    canvas.style.display = 'block';
+    empty.style.display  = 'none';
+
+    const wrap = document.getElementById('chartWrap');
+    const W    = wrap.clientWidth  || 800;
+    const H    = wrap.clientHeight || 172;
+
+    canvas.width  = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+
+    const PAD_L = 52, PAD_R = 24, PAD_T = 18, PAD_B = 36;
+    const plotW = W - PAD_L - PAD_R;
+    const plotH = H - PAD_T - PAD_B;
+
+    // X axis: always full day 6AM → 6AM next day (30 hours displayed as 6–30)
+    const now = new Date();
+    const nowFrac = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
+    // If past midnight but before 6am, offset by 24 so it stays on the right side
+    const nowPlot = nowFrac < 6 ? nowFrac + 24 : nowFrac;
+    const xStart  = 6;
+    const xEnd    = 30; // 6AM next day = hour 30
+
+    // Build each dept's series as real (time, cumulative-total) points — no
+    // flat "step" padding, so consecutive records connect on a diagonal.
+    // Because hf (hour_fraction) maps straight onto X, two records logged
+    // close together in time land close together on X too, so the segment
+    // between them is short and steep; records spaced further apart in
+    // time produce a longer, shallower segment. The arrow's angle is a
+    // direct readout of how close together in time those two saves were.
+    const series = {};
+    DEPT_ORDER.forEach(d => { series[d] = [{ hf: xStart, total: 0 }]; });
+
+    entries.forEach(e => {
+        const dept = e.department;
+        if(!series[dept]) return;
+        // hour_fraction from server; if < 6 it's after midnight, offset to 24+
+        const hf = e.hour_fraction < 6 ? e.hour_fraction + 24 : e.hour_fraction;
+        series[dept].push({ hf, total: e.total });
+    });
+
+    // Extend each series to NOW using live totals so the chart always
+    // matches the overview cards (log can be stale if counts changed
+    // outside the admin save/reset flow, e.g. tray app sync).
+    DEPT_ORDER.forEach(d => {
+        const arr       = series[d];
+        const last      = arr[arr.length - 1];
+        const cap       = Math.min(nowPlot, xEnd);
+        const liveTotal = deptStats(d).total;
+
+        if(last.hf >= cap - 0.001){
+            last.hf    = cap;
+            last.total = liveTotal;
+        } else {
+            arr.push({ hf: cap, total: liveTotal });
+        }
+    });
+
+    // Y max
+    let yMax = 10;
+    DEPT_ORDER.forEach(d => {
+        series[d].forEach(p => { if(p.total > yMax) yMax = p.total; });
+    });
+    yMax = Math.ceil(yMax * 1.15 / 5) * 5;
+
+    // Helpers
+    const toX = hf  => PAD_L + ((hf  - xStart) / (xEnd - xStart)) * plotW;
+    const toY = val => PAD_T + plotH - (val / yMax) * plotH;
+
+    // Soft plot background
+    const plotGrad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+    plotGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+    plotGrad.addColorStop(1, 'rgba(241,245,249,0.35)');
+    ctx.fillStyle = plotGrad;
+    ctx.fillRect(PAD_L, PAD_T, plotW, plotH);
+
+    // Horizontal grid + Y labels
+    const ySteps = 4;
+    ctx.textAlign = 'right';
+    ctx.font = '500 10px IBM Plex Mono, monospace';
+    for(let i = 0; i <= ySteps; i++){
+        const val = Math.round(yMax * i / ySteps);
+        const y   = toY(val);
+        ctx.strokeStyle = i === 0 ? 'rgba(100,116,139,0.28)' : 'rgba(148,163,184,0.16)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(PAD_L, y);
+        ctx.lineTo(PAD_L + plotW, y);
+        ctx.stroke();
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(val, PAD_L - 8, y + 3.5);
+    }
+
+    // Vertical grid + X labels (every 2 hours)
+    ctx.textAlign = 'center';
+    ctx.font = '500 10px IBM Plex Mono, monospace';
+    for(let h = xStart; h <= xEnd; h += 2){
+        const x = toX(h);
+        ctx.strokeStyle = 'rgba(148,163,184,0.14)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, PAD_T);
+        ctx.lineTo(x, PAD_T + plotH);
+        ctx.stroke();
+        const realH = h % 24;
+        const label = (realH % 12 || 12) + (realH < 12 ? 'am' : 'pm');
+        ctx.fillStyle = h % 4 === 0 ? '#475569' : '#94a3b8';
+        ctx.fillText(label, x, PAD_T + plotH + 18);
+    }
+
+    // NOW line + label
+    const nowX = toX(nowPlot);
+    ctx.strokeStyle = 'rgba(30,64,175,0.35)';
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(nowX, PAD_T);
+    ctx.lineTo(nowX, PAD_T + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const nowLabel = 'NOW';
+    ctx.font = '600 9px Inter, sans-serif';
+    const labelW = ctx.measureText(nowLabel).width + 10;
+    ctx.fillStyle = 'rgba(30,64,175,0.88)';
+    ctx.fillRect(nowX - labelW / 2, PAD_T - 2, labelW, 16);
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(nowLabel, nowX, PAD_T + 9);
+
+    // Draw each dept line
+    DEPT_ORDER.forEach(dept => {
+        const pts    = series[dept];
+        const colors = DEPT_COLORS[dept] || { line:'#888', fillTop:'rgba(136,136,136,0.15)', fillBot:'rgba(136,136,136,0.02)', glow:'rgba(136,136,136,0.2)' };
+
+        if(pts.length < 2) return;
+
+        // Gradient fill under line
+        const fillGrad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+        fillGrad.addColorStop(0, colors.fillTop);
+        fillGrad.addColorStop(1, colors.fillBot);
+        ctx.beginPath();
+        ctx.moveTo(toX(pts[0].hf), toY(0));
+        pts.forEach(p => ctx.lineTo(toX(p.hf), toY(p.total)));
+        ctx.lineTo(toX(pts[pts.length-1].hf), toY(0));
+        ctx.closePath();
+        ctx.fillStyle = fillGrad;
+        ctx.fill();
+
+        // Soft glow stroke
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            const x = toX(p.hf), y = toY(p.total);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colors.glow;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.35;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Main line
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            const x = toX(p.hf), y = toY(p.total);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colors.line;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Endpoint dot with ring
+        const last = pts[pts.length - 1];
+        const lx = toX(last.hf), ly = toY(last.total);
+        ctx.beginPath();
+        ctx.arc(lx, ly, 7, 0, Math.PI * 2);
+        ctx.fillStyle = colors.glow;
+        ctx.globalAlpha = 0.45;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = colors.line;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    });
+
+    // Axes border
+    ctx.strokeStyle = 'rgba(71,85,105,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, PAD_T);
+    ctx.lineTo(PAD_L, PAD_T + plotH);
+    ctx.lineTo(PAD_L + plotW, PAD_T + plotH);
+    ctx.stroke();
+}
+
+/* ===== LIVE REFRESH (every 1s) ===== */
+
+async function liveRefreshDepartments(){
+    // Skip while the edit console modal is open — don't overwrite active edits.
+    if(document.getElementById('editModal').style.display === 'flex') return;
+
+    try {
+        allDepartments = await fetchDepartments();
+        if(currentView === 'overview'){
+            await refreshAuditLogCache(false);
+            renderOverview();
+        }
+        if(currentView === 'detail' && currentDepartment){
+            renderDetailStats(currentDepartment);
+            renderDetailTable(currentDepartment);
+        }
+        document.getElementById('errorBanner').style.display = 'none';
+    } catch(e) {
+        // Transient network hiccup — ignore quietly.
+    }
+}
+
+function startPolling(){
+    if(_refreshInterval) return;
+    updateClock();
+    _clockInterval   = setInterval(updateClock, 1000);
+    _refreshInterval = setInterval(liveRefreshDepartments, 1000);
+    _chartInterval   = setInterval(fetchChartLog, 5000);
+
+    _resizeHandler = debounce(() => { if(chartLog.entries.length) renderActivityChart(); }, 120);
+    window.addEventListener('resize', _resizeHandler);
+}
+
+function stopPolling(){
+    clearInterval(_clockInterval);   _clockInterval   = null;
+    clearInterval(_refreshInterval); _refreshInterval = null;
+    clearInterval(_chartInterval);   _chartInterval   = null;
+    if(_resizeHandler){
+        window.removeEventListener('resize', _resizeHandler);
+        _resizeHandler = null;
+    }
+}
+
+/* ===== LOGIN ===== */
+
+// Default credentials stored in users.json (served by your backend or loaded
+// locally). The file ships with one admin account; edit users.json to add more.
+// Format: [{ "username": "admin", "password": "admin123" }, ...]
+//
+// If the server cannot serve users.json, the overlay falls back to the
+// hardcoded DEFAULT_USERS list below so the dashboard still works stand-alone.
+
+const DEFAULT_USERS = [
+    { username: 'admin', password: 'admin123' }
+];
+
+const SESSION_KEY = 'qc_control_session';
+
+let loadedUsers = null;
+
+async function loadUsers(){
+    try {
+        const res = await fetch('users.json');
+        if(!res.ok) throw new Error('not found');
+        loadedUsers = await res.json();
+    } catch(e){
+        loadedUsers = DEFAULT_USERS;
+    }
+}
+
+function saveSession(username){
+    try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+            username: username,
+            loggedInAt: Date.now()
+        }));
+    } catch(e){ /* storage unavailable */ }
+}
+
+function getSession(){
+    try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch(e){
+        return null;
+    }
+}
+
+function clearSession(){
+    try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+}
+
+function isLoginOverlayVisible(){
+    return document.documentElement.classList.contains('auth-required');
+}
+
+function showLoginOverlay(){
+    document.documentElement.classList.add('auth-required');
+    const overlay = document.getElementById('loginOverlay');
+    if(!overlay) return;
+    overlay.style.display = '';
+    overlay.style.opacity = '';
+    overlay.style.pointerEvents = '';
+}
+
+function dismissLoginOverlay(immediate){
+    document.documentElement.classList.remove('auth-required');
+    const overlay = document.getElementById('loginOverlay');
+    const blur    = document.getElementById('loginBlur');
+    if(!overlay) return;
+
+    if(immediate){
+        overlay.style.display = 'none';
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        if(blur) blur.style.display = 'none';
+        return;
+    }
+
+    overlay.style.transition = 'opacity 0.35s ease';
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    if(blur){ blur.style.transition = 'opacity 0.35s ease'; blur.style.opacity = '0'; }
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.style.opacity = '';
+        overlay.style.transition = '';
+        if(blur){ blur.style.display = 'none'; blur.style.opacity = ''; blur.style.transition = ''; }
+    }, 360);
+}
+
+function getCurrentUser(){
+    if(currentUsername) return currentUsername;
+    const session = getSession();
+    return (session && session.username) ? session.username : 'unknown';
+}
+
+function closeUserMenu(){
+    const wrap = document.getElementById('userMenuWrap');
+    if(wrap) wrap.classList.remove('open');
+    const btn = document.getElementById('userMenuBtn');
+    if(btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleUserMenu(e){
+    if(e) e.stopPropagation();
+    const wrap = document.getElementById('userMenuWrap');
+    if(!wrap) return;
+    const open = wrap.classList.toggle('open');
+    const btn = document.getElementById('userMenuBtn');
+    if(btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function injectUserMenu(username){
+    currentUsername = username;
+    const wrap = document.getElementById('userMenuWrap');
+    const label = document.getElementById('userMenuLabel');
+    const btn = document.getElementById('userMenuBtn');
+    if(!wrap || !label) return;
+
+    label.textContent = username;
+    wrap.style.display = 'flex';
+    if(btn && !btn.dataset.bound){
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', toggleUserMenu);
+    }
+}
+
+function logout(){
+    closeUserMenu();
+    if(confirm('Sign out of QC Control Center?')){
+        isLoggedIn = false;
+        stopPolling();
+        clearSession();
+        location.reload();
+    }
+}
+
+function restoreSession(){
+    const session = getSession();
+    if(!session || !session.username){
+        showLoginOverlay();
+        return false;
+    }
+
+    const users = loadedUsers || DEFAULT_USERS;
+    if(!users.some(u => u.username === session.username)){
+        clearSession();
+        showLoginOverlay();
+        return false;
+    }
+
+    document.documentElement.classList.remove('auth-required');
+    dismissLoginOverlay(true);
+    injectUserMenu(session.username);
+    isLoggedIn = true;
+    return true;
+}
+
+function doLogin(){
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    const errorEl  = document.getElementById('loginError');
+    const userEl   = document.getElementById('loginUser');
+    const passEl   = document.getElementById('loginPass');
+    const btn      = document.getElementById('loginBtn');
+
+    errorEl.style.display = 'none';
+    userEl.classList.remove('error');
+    passEl.classList.remove('error');
+
+    if(!username || !password){
+        errorEl.innerText = 'Please enter your username and password.';
+        errorEl.style.display = 'block';
+        (!username ? userEl : passEl).classList.add('error');
+        return;
+    }
+
+    const users = loadedUsers || DEFAULT_USERS;
+    const match = users.find(u =>
+        u.username === username && u.password === password
+    );
+
+    if(match){
+        btn.disabled = true;
+        btn.innerText = 'Signing in…';
+        saveSession(match.username);
+
+        setTimeout(async () => {
+            isLoggedIn = true;
+            dismissLoginOverlay(false);
+            injectUserMenu(match.username);
+            await loadDepartments();
+            fetchChartLog();
+            startPolling();
+        }, 380);
+    } else {
+        errorEl.innerText = 'Incorrect username or password.';
+        errorEl.style.display = 'block';
+        userEl.classList.add('error');
+        passEl.classList.add('error');
+        passEl.value = '';
+        passEl.focus();
+    }
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && isLoginOverlayVisible()){
+        doLogin();
+    }
+});
+
+(async function boot(){
+    await loadUsers();
+    const restored = restoreSession();
+    if(!restored){
+        showLoginOverlay();
+        const userField = document.getElementById('loginUser');
+        if(userField) setTimeout(() => userField.focus(), 80);
+        // Do NOT load departments — nothing to show until the user signs in
+    } else {
+        startPolling();
+        await loadDepartments();
+    }
+})();
+
+document.addEventListener('click', closeUserMenu);
+
+</script>
+
+</body>
+</html>

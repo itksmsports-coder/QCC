@@ -1,0 +1,113 @@
+{
+  "employees": [
+    {
+      "name": "Lopez, Asher",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Guinto, Bryan Joshua",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Cultivo, Ariel",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Cadinas, Arnil",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Sabilao, Arnold",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Briz, Edwin",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Dela Cruz, Frinzferrie",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Germono, Jun-Jun",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Arancon, Cromwell",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Resco, Ariel",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Perez, Jayson",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    },
+    {
+      "name": "Delos Santos, Jose",
+      "defects": {
+        "wrong_color": 0,
+        "wrong_cut": 0,
+        "off_shade": 0,
+        "keloid": 0
+      }
+    }
+  ],
+  "last_updated": "2026-06-22T11:55:15.080052"
+}

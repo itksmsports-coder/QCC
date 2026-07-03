@@ -1,0 +1,47 @@
+{
+  "ok": true,
+  "label": "2026",
+  "period": "annual",
+  "months": {
+    "2026-06": {
+      "month_key": "2026-06",
+      "month_label": "June 2026",
+      "total_errors": 0,
+      "departments": {
+        "CUTTING": 0,
+        "EMBRO": 0
+      },
+      "day_count": 2
+    },
+    "2026-07": {
+      "month_key": "2026-07",
+      "month_label": "July 2026",
+      "total_errors": 61,
+      "departments": {
+        "CUTTING": 49,
+        "EMBRO": 12
+      },
+      "day_count": 3
+    }
+  },
+  "summary": {
+    "total_yearly_errors": 61,
+    "errors_per_department": {
+      "CUTTING": 49,
+      "EMBRO": 12
+    },
+    "department_ranking": [
+      {
+        "department": "CUTTING",
+        "total": 49
+      },
+      {
+        "department": "EMBRO",
+        "total": 12
+      }
+    ],
+    "average_monthly_errors": 30.5,
+    "worst_month": "2026-07",
+    "best_month": "2026-06"
+  }
+}

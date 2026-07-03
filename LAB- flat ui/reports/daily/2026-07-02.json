@@ -1,0 +1,481 @@
+{
+  "ok": true,
+  "date": "2026-07-02",
+  "period": "daily",
+  "archived_at": "2026-07-02T06:46:40.111105",
+  "summary": {
+    "total_plant_defects": 0,
+    "worst_department": "CUTTING",
+    "department_count": 2
+  },
+  "departments": {
+    "CUTTING": {
+      "total_defects": 0,
+      "employee_count": 12,
+      "employees": [
+        {
+          "name": "Arancon, Cromwell C.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Briz, Edwin D.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Cadinas, Arnil P.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Cultivo, Ariel C.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Dela Cruz, Frinzferrie",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Delos Santos, Jose M.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Germono, Jun-Jun",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Guinto, Bryan Joshua",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Lopez, Asher F.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Perez, Jayson G.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Resco, Ariel B.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Sabilao, Arnold B.",
+          "defects": {
+            "WRONG_COLOR": 0,
+            "WRONG_SIZE": 0,
+            "WRONG_CUT": 0,
+            "OFF_SHADE": 0,
+            "LOW_QUALITY": 0,
+            "WRONG_MATERIAL": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        }
+      ],
+      "defects_by_cat": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    "EMBRO": {
+      "total_defects": 0,
+      "employee_count": 16,
+      "employees": [
+        {
+          "name": "Barias, Bryan",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Quilaton, Jeramie",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Badaguas, Lovely",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Nadela, Lorelie",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Monares, Jeniva",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Rangel, Rosenda",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Baylon, Lorence",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Lalu, Juliana",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Larioza, Jarina",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Taza De, Jolina",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Amania, Rica Mae",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Teope, Chitle",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Osila,  Daisy",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Hijie, Keana",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Candame, Reymond",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        },
+        {
+          "name": "Jerusalem, Ma. Corazon",
+          "defects": {
+            "LOW_QUALITY": 0,
+            "WRONG_COLOR_THREAD": 0,
+            "WRONG_PLACEMENT": 0,
+            "WRONG_TEXT_FONT": 0,
+            "UNBALANCED": 0,
+            "WRONG_SPELLING": 0,
+            "OTHERS": 0
+          },
+          "total": 0
+        }
+      ],
+      "defects_by_cat": {
+        "LOW_QUALITY": 0,
+        "WRONG_COLOR_THREAD": 0,
+        "WRONG_PLACEMENT": 0,
+        "WRONG_TEXT_FONT": 0,
+        "UNBALANCED": 0,
+        "WRONG_SPELLING": 0,
+        "OTHERS": 0
+      }
+    }
+  },
+  "chart_entries": [
+    {
+      "timestamp": "2026-07-01T06:01:31.509026",
+      "hour_fraction": 6.0253,
+      "department": "CUTTING",
+      "total": 3
+    },
+    {
+      "timestamp": "2026-07-01T06:01:47.773750",
+      "hour_fraction": 6.0297,
+      "department": "EMBRO",
+      "total": 1
+    },
+    {
+      "timestamp": "2026-07-01T10:25:18.270460",
+      "hour_fraction": 10.4217,
+      "department": "CUTTING",
+      "total": 11
+    },
+    {
+      "timestamp": "2026-07-01T10:27:43.344910",
+      "hour_fraction": 10.4619,
+      "department": "EMBRO",
+      "total": 4
+    },
+    {
+      "timestamp": "2026-07-01T10:28:54.034021",
+      "hour_fraction": 10.4817,
+      "department": "EMBRO",
+      "total": 5
+    },
+    {
+      "timestamp": "2026-07-01T12:59:02.349533",
+      "hour_fraction": 12.9839,
+      "department": "CUTTING",
+      "total": 12
+    },
+    {
+      "timestamp": "2026-07-01T13:52:39.924876",
+      "hour_fraction": 13.8775,
+      "department": "EMBRO",
+      "total": 6
+    },
+    {
+      "timestamp": "2026-07-01T17:17:41.634415",
+      "hour_fraction": 17.2947,
+      "department": "CUTTING",
+      "total": 16
+    },
+    {
+      "timestamp": "2026-07-01T17:20:22.506623",
+      "hour_fraction": 17.3394,
+      "department": "EMBRO",
+      "total": 10
+    },
+    {
+      "timestamp": "2026-07-01T17:21:39.641246",
+      "hour_fraction": 17.3608,
+      "department": "EMBRO",
+      "total": 9
+    },
+    {
+      "timestamp": "2026-07-01T22:39:55.077835",
+      "hour_fraction": 22.6653,
+      "department": "CUTTING",
+      "total": 26
+    },
+    {
+      "timestamp": "2026-07-01T23:17:02.496986",
+      "hour_fraction": 23.2839,
+      "department": "CUTTING",
+      "total": 27
+    }
+  ]
+}

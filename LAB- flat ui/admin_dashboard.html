@@ -1,0 +1,4255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>QC Control Center</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+(function(){
+    try {
+        var raw = localStorage.getItem('qc_control_session');
+        if(!raw){ document.documentElement.classList.add('auth-required'); return; }
+        var session = JSON.parse(raw);
+        if(!session || !session.username) document.documentElement.classList.add('auth-required');
+    } catch(e){
+        document.documentElement.classList.add('auth-required');
+    }
+})();
+</script>
+
+<style>
+
+:root{
+    --blue:#1e3a8a;
+    --blue-mid:#3b82f6;
+    --blue-soft:rgba(59,130,246,0.09);
+    --blue-border:rgba(59,130,246,0.20);
+    --red:#b91c1c;
+    --red-mid:#e11d48;
+    --red-soft:rgba(225,29,72,0.09);
+    --red-border:rgba(225,29,72,0.20);
+    --green:#047857;
+    --green-soft:rgba(4,120,87,0.09);
+    --amber:#b45309;
+    --bg:#eef2f7;
+    --surface:rgba(255,255,255,0.92);
+    --surface-solid:#ffffff;
+    --surface-2:#f8fafc;
+    --border:rgba(148,163,184,0.30);
+    --text:#0f172a;
+    --text-muted:#64748b;
+    --shadow-sm:0 1px 2px rgba(15,23,42,0.04), 0 2px 8px rgba(15,23,42,0.03);
+    --shadow-md:0 4px 24px rgba(15,23,42,0.07);
+    --radius:12px;
+    --body:'Inter',sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html, body{ height:100%; overflow:hidden; }
+
+body{
+    font-family:var(--body);
+    background:var(--bg);
+    color:var(--text);
+    position:relative;
+}
+
+.bg-watermark{
+    position:fixed;
+    inset:-12%;
+    background:url('logo.png') center 38% / min(480px, 52vw) no-repeat;
+    /* PERF: blur(80px) creates an enormous offscreen texture that the GPU must
+       repaint any time the document repaints.  blur(16px) achieves the same
+       "vague watermark" feel at a fraction of the GPU cost.  Reduced opacity
+       compensates so it doesn't look sharper than before. */
+    filter:blur(16px);
+    opacity:0.045;
+    pointer-events:none;
+    z-index:0;
+    /* Own compositor tile — never causes repaints elsewhere */
+    will-change:transform;
+}
+
+body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(30,64,175,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30,64,175,0.022) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
+    z-index:0;
+}
+
+body::before{
+    content:'';
+    position:fixed;
+    top:0; left:0; right:0;
+    height:3px;
+    background:linear-gradient(90deg, var(--blue), var(--blue-mid), var(--red-mid), var(--red));
+    z-index:200;
+}
+
+/* ── When logged out: freeze everything except the login card ── */
+html.auth-required .app,
+html.auth-required .bg-watermark,
+html.auth-required body::before,
+html.auth-required body::after {
+    display: none !important;
+}
+
+
+button{ font-family:var(--body); }
+
+.app{ display:flex; flex-direction:column; height:100vh; position:relative; z-index:1; contain:layout style; }
+
+/* NAV */
+.topnav{
+    flex:0 0 auto;
+    height:68px;
+    border-bottom:1px solid var(--border);
+    /* PERF: Replaced backdrop-filter:blur(12px) saturate(1.2) with solid-ish tint.
+       backdrop-filter forces a compositor layer for the entire nav; on mid-range
+       GPUs this was causing a multi-ms repaint on every scroll/hover event.
+       The solid colour at 0.97 opacity looks nearly identical. */
+    background:rgba(255,255,255,0.97);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    gap:18px;
+    box-shadow:var(--shadow-sm);
+    /* Contain layout so stacking-context changes don't reflow the whole page */
+    contain:layout style;
+}
+
+.brand{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+
+.logo-img{ width:68px; height:68px; object-fit:contain; border-radius:6px; }
+
+.brand-text{ font-size:13px; font-weight:700; white-space:nowrap; color:var(--blue); line-height:1.25; }
+
+.nav-tabs{ display:flex; gap:4px; overflow-x:auto; flex:1; }
+
+.nav-tab{
+    background:none; border:none; padding:8px 14px;
+    font-weight:600; font-size:13px; color:#334155;
+    cursor:pointer; border-radius:8px;
+    /* PERF: was transition:background 0.16s, color 0.16s, box-shadow 0.16s.
+       Explicit list is fine here — just spell it out so the browser
+       doesn't need to scan all properties. */
+    transition:background-color 0.16s ease, color 0.16s ease;
+    white-space:nowrap; border:1px solid transparent;
+}
+.nav-tab:hover{ background:var(--blue-soft); color:var(--blue); }
+.nav-tab.active{
+    background:var(--surface-solid); color:var(--blue);
+    border-color:var(--blue-border);
+    box-shadow:0 1px 4px rgba(59,130,246,0.10);
+}
+
+.status-cluster{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+
+.live-pill{
+    display:flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:1px;
+    color:var(--green); background:var(--green-soft);
+    border:1px solid rgba(21,128,61,0.25); padding:5px 10px; border-radius:20px;
+}
+
+.live-dot{
+    width:6px; height:6px; border-radius:50%; background:var(--green);
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(21,128,61,0.45); }
+    70%{ box-shadow:0 0 0 6px rgba(21,128,61,0); }
+    100%{ box-shadow:0 0 0 0 rgba(21,128,61,0); }
+}
+
+#clock{ font-family:var(--mono); font-size:13.5px; font-weight:600; color:var(--text); }
+#date{ color:#475569; font-size:10px; font-family:var(--mono); }
+.clock-box{ text-align:right; line-height:1.35; }
+
+/* VIEWS */
+.view-container{
+    flex:1 1 auto; min-height:0; padding:14px 20px;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+}
+
+#view-overview{
+    flex:1 1 auto; min-height:0; overflow:hidden; gap:10px;
+}
+
+.view{ display:none; flex-direction:column; min-height:0; flex:1; gap:14px; }
+.view.active{ display:flex; }
+
+.error-banner{
+    background:var(--red-soft); border:1px solid var(--red-border);
+    color:var(--red); padding:13px 16px; border-radius:10px; font-size:13px;
+    flex:0 0 auto;
+}
+
+/* OVERVIEW */
+.overview-header{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.overview-header h1{ font-size:17px; font-weight:700; letter-spacing:-0.02em; line-height:1.2; }
+.overview-header p{ display:none; }
+.overview-shift{
+    font-family:var(--mono); font-size:10.5px; font-weight:600;
+    color:#475569; background:var(--surface-2);
+    border:1px solid var(--border); padding:5px 10px; border-radius:999px;
+    white-space:nowrap;
+}
+
+.overview-body{
+    flex:1 1 auto; min-height:0; overflow:hidden;
+    display:grid;
+    grid-template-rows:auto minmax(0, 1fr) auto;
+    gap:10px;
+}
+
+.overview-kpi-row{
+    display:grid; grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:10px; flex:0 0 auto;
+}
+.kpi-tile{
+    /* PERF: Removed backdrop-filter:blur(8px).  These small tiles cover a tiny
+       area but blur(8px) forces the browser to sample an 8-px ring outside each
+       tile's bounds on every paint.  With 4 tiles polling every second, the
+       compositor was doing 4 extra texture samples per frame.
+       background at 0.97 opacity is indistinguishable on the light --bg colour. */
+    background:rgba(255,255,255,0.97);
+    border:1px solid var(--border);
+    border-radius:12px; padding:10px 12px;
+    box-shadow:var(--shadow-sm);
+    /* Isolate paint — number changes don't repaint siblings */
+    contain:layout paint style;
+}
+.kpi-label{
+    font-size:9px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text-muted); font-weight:700; margin-bottom:4px;
+}
+.kpi-value{
+    font-size:20px; font-weight:800; line-height:1;
+    font-variant-numeric:tabular-nums; color:#0f172a;
+}
+.kpi-sub{
+    margin-top:4px; font-size:10px; color:#64748b; font-weight:500;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+.overview-split{
+    display:grid; grid-template-columns:minmax(0, 1fr) 280px;
+    gap:10px; align-items:stretch; min-height:0; overflow:hidden;
+}
+
+.insights-stack{
+    display:flex; flex-direction:column; gap:10px;
+    min-height:0; overflow:hidden; height:100%;
+}
+
+.compare-panel, .recent-panel{
+    /* PERF: Removed backdrop-filter:blur(8px) — same rationale as kpi-tile. */
+    background:rgba(255,255,255,0.97); border:1px solid var(--border);
+    border-radius:14px; padding:12px 14px;
+    box-shadow:var(--shadow-sm);
+}
+.compare-panel{ flex:0 0 auto; }
+.recent-panel{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+.panel-title{
+    font-size:12px; font-weight:700; color:#0f172a; margin-bottom:8px;
+    letter-spacing:-0.01em;
+}
+
+.compare-row{ margin-bottom:10px; }
+.compare-row:last-child{ margin-bottom:0; }
+.compare-head{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:5px; font-size:11px; font-weight:600;
+}
+.compare-name{ display:flex; align-items:center; gap:7px; color:#334155; }
+.compare-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.compare-val{ font-family:var(--mono); font-weight:700; color:#0f172a; font-size:11px; }
+.compare-bar{
+    height:7px; background:#e2e8f0; border-radius:999px; overflow:hidden;
+}
+.compare-fill{
+    height:100%; border-radius:999px; transition:width 0.35s ease;
+}
+.compare-foot{
+    margin-top:8px; padding-top:8px;
+    border-top:1px solid rgba(148,163,184,0.22);
+    font-size:10.5px; color:#64748b; line-height:1.4;
+}
+.compare-foot b{ color:#334155; }
+
+.dept-grid{
+    display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:10px; align-content:stretch; min-height:0;
+}
+
+.dept-card{
+    /* PERF: Removed backdrop-filter:blur(8px).  Dept cards update every second;
+       blur forces a full compositor re-sample on each update cycle, causing
+       visible stutter on cards during live polling.
+       box-shadow collapsed from multi-layer to single layer (removes overdraw). */
+    background:rgba(255,255,255,0.97); border:1px solid var(--border);
+    border-radius:12px; padding:12px 14px;
+    display:flex; flex-direction:column; gap:8px;
+    /* PERF: Animate only opacity+transform — NOT box-shadow or border-color.
+       Shadow/border changes trigger full repaint; transform/opacity are GPU-only. */
+    transition:transform 0.18s ease, opacity 0.18s ease;
+    box-shadow:0 2px 8px rgba(15,23,42,0.07);
+    position:relative; overflow:hidden;
+    min-height:0;
+    /* PERF: contain:layout — card repaints stay isolated from the rest of the grid */
+    contain:layout paint style;
+}
+.dept-card:hover{
+    /* PERF: only transform — no box-shadow change → no repaint, only compositing */
+    transform:translateY(-1px);
+    border-color:var(--blue-border);
+}
+.dept-card::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:var(--dept-accent, var(--blue-mid));
+    border-radius:12px 0 0 12px;
+}
+.dept-card.dept-cutting{ --dept-accent:#2563eb; }
+.dept-card.dept-embro{ --dept-accent:#e11d48; }
+
+.dept-card-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.dept-card-top-left{ display:flex; align-items:center; gap:8px; }
+
+.dept-status{
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.45px; padding:4px 9px; border-radius:999px;
+    border:1px solid transparent; white-space:nowrap;
+}
+.dept-status.ok{ background:var(--green-soft); color:var(--green); border-color:rgba(4,120,87,0.2); }
+.dept-status.watch{ background:rgba(217,119,6,0.10); color:#b45309; border-color:rgba(217,119,6,0.22); }
+.dept-status.alert{ background:var(--red-soft); color:var(--red); border-color:var(--red-border); }
+
+.dept-code{
+    font-family:var(--mono); font-size:10.5px; color:var(--blue);
+    background:var(--blue-soft); padding:3px 7px; border-radius:5px; font-weight:600;
+}
+
+.dept-card-name{ font-size:14px; font-weight:700; }
+.dept-card-metrics{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+.metric{ display:flex; flex-direction:column; }
+.metric-value{ font-size:18px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.metric-label{ font-size:9px; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-top:3px; font-weight:600; }
+
+.dept-card-actions{ display:flex; gap:8px; }
+.dept-card-actions .action-btn{ padding:7px 12px; font-size:12px; }
+
+.dept-card-footer{
+    margin-top:auto;
+    padding-top:6px;
+    border-top:1px solid rgba(148,163,184,0.18);
+    font-size:10px;
+    color:#94a3b8;
+    font-weight:500;
+}
+.dept-card-footer b{
+    color:#64748b;
+    font-weight:600;
+}
+
+.dept-card-insights{
+    display:grid; grid-template-columns:1fr 1fr; gap:6px 10px;
+    padding:8px 10px; background:var(--surface-2);
+    border:1px solid rgba(148,163,184,0.20); border-radius:8px;
+}
+.insight-item{ font-size:10px; color:#64748b; line-height:1.3; }
+.insight-item b{ display:block; color:#0f172a; font-size:11px; font-weight:700; margin-top:1px; }
+
+.recent-list{ display:flex; flex-direction:column; gap:6px; flex:1; min-height:0; overflow:hidden; }
+.recent-item{
+    padding:7px 8px; border-radius:8px;
+    background:var(--surface-2); border:1px solid rgba(148,163,184,0.18);
+    font-size:10.5px; line-height:1.35;
+}
+.recent-item-time{ font-family:var(--mono); font-size:9px; color:#94a3b8; margin-bottom:2px; }
+.recent-item-text{ color:#334155; }
+.recent-item-text b{ color:#1e3a8a; font-weight:700; }
+.recent-empty{ font-size:11px; color:#94a3b8; font-style:italic; padding:4px 2px; }
+
+/* CHART PANEL — overview fit */
+#view-overview .chart-panel{
+    flex:1 1 auto; min-height:0; height:100%;
+    display:flex; flex-direction:column;
+    padding:12px 14px 10px;
+    border-radius:14px;
+}
+#view-overview .chart-panel-header{ margin-bottom:8px; }
+#view-overview .chart-panel-title{ font-size:12.5px; }
+#view-overview .chart-canvas-wrap{
+    flex:1 1 auto; min-height:0; height:auto !important;
+    max-height:none;
+}
+#view-overview .chart-empty{
+    height:100%; min-height:72px; font-size:11.5px;
+}
+
+@media(max-width:1100px){
+    .overview-kpi-row{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .overview-split{ grid-template-columns:1fr; }
+}
+@media(max-width:720px){
+    .dept-grid{ grid-template-columns:1fr; }
+    .overview-kpi-row{ grid-template-columns:1fr 1fr; }
+    .dept-card-metrics{ grid-template-columns:repeat(3, 1fr); }
+    .detail-header{ gap:8px; }
+    .detail-header-left{ gap:6px; }
+    .detail-header-right{ gap:6px; }
+    .table-title{ display:none; }
+    .live-monitor{ padding:5px 8px; font-size:10.5px; }
+    .action-btn{ padding:7px 10px; font-size:11.5px; }
+}
+
+/* BUTTONS */
+.action-btn{
+    border:none; padding:8px 14px; border-radius:8px;
+    font-weight:600; font-size:12.5px; cursor:pointer;
+    /* PERF: was transition:background 0.14s, transform 0.12s, box-shadow 0.14s.
+       box-shadow transitions force repaints; replaced with opacity which is
+       GPU-only and cheaper, while keeping the transform for the press feedback. */
+    transition:opacity 0.14s ease, transform 0.12s ease;
+}
+.action-btn:active{ transform:scale(0.98); }
+.btn-view{ background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue-border); flex:1; }
+.btn-view:hover{ background:rgba(59,130,246,0.16); }
+.btn-update{ background:linear-gradient(180deg, #2563eb, #1e40af); color:#fff; flex:1; box-shadow:0 2px 8px rgba(37,99,235,0.25); }
+.btn-update:hover{ opacity:0.88; }
+.btn-add-emp{ background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue-border); font-weight:700; }
+.btn-add-emp:hover{ background:rgba(59,130,246,0.18); }
+.btn-cancel{ background:none; color:#1e293b; border:1px solid var(--border); font-weight:600; }
+.btn-cancel:hover{ border-color:#94a3b8; color:var(--text); }
+.btn-save{ background:var(--blue); color:#fff; }
+.btn-save:hover{ opacity:0.88; }
+.btn-ghost-sm{ background:none; border:none; color:#1e293b; font-size:12.5px; font-weight:700; cursor:pointer; padding:4px 0; }
+.btn-ghost-sm:hover{ color:var(--blue); }
+
+/* ═══════════════════════════════════════════════════════════════
+   DETAIL VIEW — flat, production-grade redesign
+   
+   Root causes of the old scroll-alignment glitch:
+   1. th-inner spans had their own border + border-radius, so the
+      "header cell" and the actual <th> boundary didn't match — 
+      subpixel gap appeared when the scroll container moved.
+   2. border-collapse:separate with border-spacing:0 caused double-
+      borders that jittered when sticky cells composited separately.
+   3. padding on .table-scroll meant sticky left:0 was offset from
+      the visual edge.
+   4. background:transparent on sticky th let content bleed through.
+
+   Fixes applied:
+   - border-collapse:collapse (single pixel borders, no gap)
+   - NO wrapper span inside th — header style goes directly on th
+   - NO padding on .table-scroll — table sits flush to container
+   - Solid opaque backgrounds on ALL sticky elements
+   - table-layout:fixed for even column distribution
+   - No transitions on table cells (remove all cell repaints)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* DETAIL */
+.detail-header{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:nowrap;
+    gap:14px;
+    padding-bottom:0;
+}
+.detail-header-left{
+    display:flex; align-items:center; gap:10px;
+    min-width:0;
+    overflow:hidden;
+}
+.detail-divider{
+    width:1px; height:18px; flex:0 0 auto;
+    background:#e2e8f0;
+}
+.detail-back-row{ display:flex; align-items:center; gap:8px; }
+.detail-back-row .btn-ghost-sm,
+.detail-header-left .btn-ghost-sm{
+    display:flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:6px;
+    background:#fff; border:1px solid #d1d5db;
+    font-size:12.5px; font-weight:600; color:#374151;
+    flex:0 0 auto; white-space:nowrap;
+    transition:border-color 0.12s ease, color 0.12s ease;
+}
+.detail-back-row .btn-ghost-sm:hover,
+.detail-header-left .btn-ghost-sm:hover{
+    border-color:#3b82f6; color:#1e3a8a;
+}
+.detail-header-right{
+    display:flex; align-items:center; gap:8px;
+    flex:0 0 auto;
+}
+.detail-stats{ display:none; }
+
+/* ── Table wrapper: clean white card, no blur, no decorative shadow ── */
+.table-wrapper{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    overflow:hidden;
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column;
+}
+
+/* ── Title/live-total now live inside .detail-header-left/-right above;
+   the standalone table toolbar row was removed to free up vertical
+   space for the table itself. ── */
+.table-title-group{ display:flex; align-items:center; gap:10px; }
+.table-title{ font-size:13px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.live-monitor{
+    display:flex; align-items:center; gap:6px;
+    background:#f1f5f9; padding:5px 12px;
+    border-radius:6px; border:1px solid #e2e8f0;
+    font-size:11.5px; color:#475569; font-weight:600;
+    flex:0 0 auto; white-space:nowrap;
+}
+.live-number{
+    font-family:var(--mono); font-size:14px; font-weight:700; color:#2563eb;
+    font-variant-numeric:tabular-nums;
+}
+
+/* ── Scroll pane: NO padding so sticky left:0 is flush ── */
+.table-scroll{
+    overflow:auto;
+    flex:1 1 auto; min-height:0;
+    /* No padding — padding breaks sticky column alignment */
+}
+
+/* ════════════════════════════════════════════════════════
+   DATA TABLE — production-safe sticky layout
+   
+   Key rules:
+   • border-collapse:collapse  → single shared borders, no gap
+   • table-layout:auto         → columns size to content
+   • Sticky th/td get explicit solid background (no transparent)
+   • No inner wrapper spans on th — style the th directly
+   • No transitions on cells — causes compositor layer conflicts
+     with sticky positioning during scroll
+   ════════════════════════════════════════════════════════ */
+.data-table{
+    width:100%;
+    border-collapse:collapse;
+    border-spacing:0;
+    table-layout:auto;
+}
+
+/* ── Column headers ── */
+.data-table thead th{
+    position:sticky;
+    top:0;
+    z-index:10;
+    padding:0;
+    text-align:center;
+    white-space:nowrap;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    vertical-align:middle;
+    /* Solid background — REQUIRED for sticky to not bleed through */
+    background:#f1f5f9;
+    color:#374151;
+    border-bottom:2px solid #cbd5e1;
+    border-right:1px solid #e2e8f0;
+    /* No box-shadow, no border-radius, no inner span */
+}
+
+/* Employee column header — sticky on both axes */
+.data-table thead th.col-employee{
+    text-align:left;
+    position:sticky;
+    top:0; left:0;
+    z-index:20; /* highest: corner of thead */
+    min-width:170px;
+    max-width:200px;
+    background:#e8edf4;
+    color:#0f172a;
+    border-right:2px solid #cbd5e1;
+    padding:11px 14px;
+}
+
+/* Category column headers — coloured per dept */
+.data-table thead th.cat-header{
+    padding:11px 8px;
+    min-width:72px;
+}
+
+/* Total column header */
+.data-table thead th.col-total{
+    background:#e0e7ff;
+    color:#312e81;
+    border-left:2px solid #c7d2fe;
+    padding:11px 12px;
+}
+
+/* ── Body cells ── */
+.data-table tbody td{
+    padding:10px 12px;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:14px;
+    font-weight:600;
+    color:#0f172a;
+    border-bottom:1px solid #e2e8f0;
+    border-right:1px solid #e2e8f0;
+    /* NO transition — transitions on sticky cells cause scroll jank */
+}
+
+/* Stripe rows */
+.data-table tbody tr.row-odd  td{ background:#ffffff; }
+.data-table tbody tr.row-even td{ background:#f8fafc; }
+
+/* Employee name cell — sticky left */
+.data-table tbody td.col-employee{
+    text-align:left;
+    font-family:var(--body);
+    font-weight:600;
+    font-size:13.5px;
+    color:#0f172a;
+    position:sticky; left:0;
+    z-index:5;
+    border-right:2px solid #cbd5e1;
+    min-width:170px;
+    max-width:200px;
+    padding:10px 14px;
+    /* Stripe backgrounds for sticky column — MUST match row stripe exactly */
+}
+.data-table tbody tr.row-odd  td.col-employee{ background:#ffffff; }
+.data-table tbody tr.row-even td.col-employee{ background:#f0f4f8; }
+
+/* Cell value states */
+.data-table tbody td.cell-zero{
+    color:#94a3b8;
+    font-weight:400;
+}
+.data-table tbody td.cell-high{
+    background:#fef9c3 !important;
+    color:#854d0e;
+    font-weight:700;
+}
+
+/* Row total */
+.data-table tbody td.col-total{
+    font-weight:800;
+    font-size:14px;
+    color:#312e81;
+    background:#eef2ff !important;
+    border-left:2px solid #c7d2fe;
+}
+
+/* Hover effect removed — it forced a background repaint on the sticky
+   col-employee/col-total cells on every mousemove, which is what caused
+   the lag/slowness on the CUTTING and EMBRO tables. */
+
+/* ── Footer totals row ── */
+.data-table tfoot td{
+    position:sticky; bottom:0; z-index:10;
+    padding:11px 12px;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:14px;
+    font-weight:800;
+    color:#0f172a;
+    background:#e2e8f0;
+    border-top:2px solid #94a3b8;
+    border-right:1px solid #cbd5e1;
+}
+.data-table tfoot td:first-child{
+    font-family:var(--body);
+    text-align:left;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:#475569;
+    position:sticky; left:0;
+    z-index:15; /* above other footer cells */
+    background:#d1d9e0;
+    border-right:2px solid #94a3b8;
+    padding:11px 14px;
+}
+.data-table tfoot td.col-foot-total{
+    background:#c7d2fe;
+    color:#1e1b4b;
+    font-size:15px;
+    border-left:2px solid #a5b4fc;
+}
+
+.empty-state{
+    padding:56px 20px; text-align:center;
+    color:#94a3b8; font-size:13px; font-weight:500;
+}
+
+/* MODAL */
+.modal{
+    position:fixed; inset:0;
+    /* PERF: Removed fullscreen backdrop-filter:blur(2px).
+       Blurring the full viewport (typically 1920×1080+) creates an expensive
+       off-screen surface.  The same depth perception is achieved with a darker
+       semi-transparent overlay alone, which costs only a flat colour composite. */
+    background:rgba(15,23,42,0.55);
+    display:none; align-items:center; justify-content:center;
+    z-index:999; padding:16px;
+}
+.modal-content{
+    width:96vw; max-width:none; max-height:90vh;
+    background:var(--surface-solid); padding:20px 28px;
+    border:1px solid var(--border); border-radius:16px;
+    display:flex; flex-direction:column; gap:14px;
+    box-shadow:0 8px 32px rgba(15,23,42,0.18);
+    animation:pop 0.15s ease;
+    font-family:var(--body);
+}
+
+@keyframes pop{
+    from{ transform:scale(0.97); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+}
+
+.modal-header{ display:flex; justify-content:space-between; align-items:flex-start; flex:0 0 auto; }
+.modal-eyebrow{ font-family:var(--body); font-size:10px; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:3px; font-weight:600; }
+.modal-header h2{ font-size:17px; font-weight:700; }
+.close-btn{ font-size:22px; line-height:1; cursor:pointer; color:#334155; background:none; border:none; }
+.close-btn:hover{ color:var(--text); }
+
+#consoleBody{ flex:1 1 auto; min-height:0; overflow:auto; border:1px solid var(--border); border-radius:10px; }
+
+.console-table{ width:100%; border-collapse:separate; border-spacing:0; font-family:var(--body); }
+.console-table th{
+    position:sticky; top:0; background:var(--surface-2);
+    font-size:12px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.45px; padding:12px 10px; text-align:center;
+    border-bottom:2px solid var(--border); white-space:nowrap; z-index:1;
+}
+.console-table th:first-child{ text-align:left; color:#0f172a; }
+.console-table td{ padding:10px 10px; text-align:center; border-bottom:1px solid rgba(148,163,184,0.18); }
+.console-table tbody tr:nth-child(even){ background:rgba(248,250,252,0.8); }
+.console-table tbody tr:hover{ background:rgba(59,130,246,0.05); }
+
+.console-name-box{
+    background:#fff; border:1px solid #dde6f0; border-radius:9px;
+    display:flex; align-items:center; min-width:170px;
+}
+.console-name-box .console-input{
+    width:100%; border:none; background:transparent;
+    font-weight:700; font-size:14.5px; color:#0f172a;
+    padding:9px 12px; border-radius:9px;
+}
+.console-name-box .console-input:focus{ box-shadow:0 0 0 2px var(--blue-soft); }
+
+.stepper-group{ display:flex; align-items:center; justify-content:center; gap:6px; }
+.step-btn{
+    width:23px; height:23px; min-width:23px; border-radius:50%; border:none;
+    background:#dbe7fb; color:#1d4ed8; font-weight:700; font-size:15px;
+    line-height:1; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;
+}
+.step-btn:hover{ background:#c3dafc; }
+.step-btn:active{ transform:scale(0.92); }
+
+.console-input{
+    background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:7px 8px; border-radius:6px;
+    outline:none; font-family:var(--body); font-size:14px;
+}
+.console-num{
+    width:50px; text-align:center; font-weight:700;
+    font-size:14px; font-family:var(--mono);
+}
+.console-input:focus{ border-color:var(--blue-mid); box-shadow:0 0 0 2px var(--blue-soft); }
+
+.console-total-cell{ font-weight:700; font-size:15px; color:#0f172a; }
+
+.console-del-btn{
+    background:none; border:none; color:#dc2626; font-size:20px;
+    font-weight:700; cursor:pointer; line-height:1; padding:4px;
+}
+.console-del-btn:hover{ color:#991b1b; transform:scale(1.12); }
+
+.modal-actions{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+/* TOAST */
+.toast{
+    position:fixed; bottom:20px; right:20px; padding:12px 16px;
+    border-radius:9px; font-weight:600; font-size:13px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999;
+    border:1px solid transparent; animation:pop 0.15s ease;
+}
+.toast.success{ background:var(--green-soft); border-color:rgba(21,128,61,0.3); color:var(--green); }
+.toast.error{ background:var(--red-soft); border-color:var(--red-border); color:var(--red); }
+
+tr.new-emp-row td{ background:rgba(59,130,246,0.06); border-top:1px dashed var(--blue-border); }
+
+/* CHART PANEL */
+.chart-panel{
+    flex:0 0 auto;
+    /* PERF: Removed backdrop-filter:blur(10px) — this large element behind the
+       canvas triggered expensive compositor re-sampling on every chart redraw
+       (every 5 seconds + every overview render).  Solid high-opacity bg + lighter
+       single shadow achieves the same depth without GPU cost. */
+    background:rgba(255,255,255,0.99);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px 22px 16px;
+    box-shadow:0 2px 12px rgba(15,23,42,0.07);
+}
+
+.chart-panel-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; gap:12px; flex-wrap:wrap;
+}
+
+.chart-panel-title{
+    font-size:14px; font-weight:700; color:#0f172a;
+    letter-spacing:-0.01em;
+}
+
+.chart-legend{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+
+.legend-item{
+    display:flex; align-items:center; gap:7px;
+    font-size:11.5px; font-weight:600; color:#475569;
+    padding:4px 10px 4px 8px;
+    background:rgba(248,250,252,0.9);
+    border:1px solid var(--border);
+    border-radius:999px;
+}
+
+.legend-dot{
+    width:8px; height:8px; border-radius:50%;
+    flex-shrink:0;
+    box-shadow:0 0 0 2px rgba(255,255,255,0.9);
+}
+
+.chart-meta{
+    font-family:var(--mono); font-size:10px; color:#94a3b8;
+    white-space:nowrap;
+    padding:4px 10px;
+    background:var(--surface-2);
+    border-radius:999px;
+    border:1px solid var(--border);
+}
+
+.chart-canvas-wrap{
+    position:relative; width:100%; height:128px;
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(255,255,255,0.6) 100%);
+    border:1px solid rgba(148,163,184,0.20);
+    overflow:hidden;
+}
+
+.chart-canvas-wrap canvas{
+    width:100% !important; height:100% !important;
+    display:block;
+}
+
+.chart-empty{
+    display:flex; align-items:center; justify-content:center;
+    height:128px; color:#94a3b8; font-size:12.5px; font-weight:500;
+}
+
+
+.btn-excel{ background:#15803d; color:#fff; }
+.btn-excel:hover{ background:#166534; }
+.btn-reset{ background:var(--red-soft); color:var(--red); border:1px solid var(--red-border); }
+.btn-reset:hover{ background:rgba(239,68,68,0.18); }
+
+@media(prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+
+/* ===== LOGIN OVERLAY ===== */
+#loginOverlay{
+    position:fixed; inset:0; z-index:9999;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(15,23,42,0.50);
+    padding:20px;
+    /* No backdrop-filter here — it forces re-sampling on every keypress.
+       The blur lives on a dedicated child layer below so it never repaints
+       when the user types. */
+}
+html.auth-required #loginOverlay{
+    display:flex;
+}
+
+/* Blur layer: fixed, behind everything, its own compositor tile */
+#loginBlur{
+    position:fixed; inset:0; z-index:9998;
+    display:none;
+    backdrop-filter:blur(10px) brightness(0.55);
+    -webkit-backdrop-filter:blur(10px) brightness(0.55);
+    will-change:transform;   /* promotes to its own layer — never repaints on input events */
+    pointer-events:none;
+}
+html.auth-required #loginBlur{
+    display:block;
+}
+
+#loginOverlay::after{
+    content:'';
+    position:absolute; inset:-10%;
+    background:url('logo.png') center center / min(420px, 50vw) no-repeat;
+    /* PERF: was filter:blur(90px) — massive offscreen texture on a fixed element.
+       blur(20px) with lower opacity provides the same soft-glow feel at ~10× lower cost. */
+    filter:blur(20px);
+    opacity:0.07;
+    pointer-events:none;
+}
+
+/* subtle grid texture on the overlay itself */
+#loginOverlay::before{
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:38px 38px;
+    pointer-events:none;
+}
+
+/* ── outer glow wrapper that creates the ombre border ── */
+.login-glow{
+    width:100%;
+    max-width:360px;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    animation:loginDrop 0.30s cubic-bezier(0.34,1.56,0.64,1) both;
+    will-change:transform, opacity;
+}
+
+@keyframes loginDrop{
+    from{ opacity:0; transform:translateY(-22px) scale(0.96); }
+    to  { opacity:1; transform:translateY(0)     scale(1);    }
+}
+
+/* the ombre border is a pseudo behind the white box */
+.login-glow::before{
+    content:'';
+    position:absolute;
+    inset:-3px;
+    border-radius:22px;
+    background:linear-gradient(
+        170deg,
+        #1e40af 0%,
+        #3b82f6 28%,
+        #a855f7 54%,
+        #ef4444 78%,
+        #b91c1c 100%
+    );
+    z-index:0;
+}
+
+@keyframes haloPulse{
+    0%,100%{ opacity:0.7; }
+    50%{ opacity:1; }
+}
+
+/* ── logo sits above the box, outside the border ── */
+.login-logo-above{
+    position:relative; z-index:2;
+    margin-bottom:-1px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+
+.login-logo-above img{
+    width:72px; height:72px; object-fit:contain;
+    border-radius:14px;
+    border:2px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.08);
+    box-shadow:0 8px 24px rgba(0,0,0,0.40);
+    display:block;
+}
+
+.login-logo-above .logo-fallback-above{
+    width:72px; height:72px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.10);
+    border:2px solid rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.40);
+}
+
+/* ── white login card ── */
+.login-box{
+    position:relative; z-index:1;
+    width:100%;
+    background:#ffffff;
+    border-radius:18px;
+    padding:32px 36px 30px;
+    /* PERF: was box-shadow:0 24px 64px rgba(0,0,0,0.32) — enormous blur radius
+       creates a large shadow texture.  Tighter shadow costs far less to paint. */
+    box-shadow:0 8px 32px rgba(0,0,0,0.22);
+}
+
+.login-title{
+    font-size:21px; font-weight:700; color:var(--text);
+    margin-bottom:3px; text-align:center;
+}
+.login-subtitle{
+    font-size:12.5px; color:#64748b; margin-bottom:24px;
+    text-align:center;
+}
+
+.login-field{ margin-bottom:15px; }
+.login-label{
+    display:block; font-size:11px; font-weight:700;
+    color:#334155; margin-bottom:5px; letter-spacing:0.5px;
+    text-transform:uppercase;
+}
+
+.login-input{
+    width:100%; padding:11px 14px;
+    border:1.5px solid var(--border); border-radius:9px;
+    font-size:14px; font-family:var(--body); color:var(--text);
+    background:#f8fafc; outline:none;
+    transition:border-color 0.15s, box-shadow 0.15s;
+}
+.login-input:focus{
+    border-color:var(--blue-mid);
+    box-shadow:0 0 0 3px var(--blue-soft);
+    background:#fff;
+}
+.login-input.error{ border-color:var(--red-mid); box-shadow:0 0 0 3px var(--red-soft); }
+
+.login-error{
+    background:var(--red-soft); border:1px solid var(--red-border);
+    color:var(--red); padding:10px 14px; border-radius:8px;
+    font-size:12.5px; font-weight:600; margin-bottom:14px;
+    display:none;
+}
+
+.login-btn{
+    width:100%; padding:12px;
+    background:linear-gradient(90deg, var(--blue) 0%, #6366f1 50%, var(--red-mid) 100%);
+    color:#fff;
+    border:none; border-radius:9px;
+    font-size:14.5px; font-weight:700; font-family:var(--body);
+    cursor:pointer;
+    transition:opacity 0.14s, transform 0.1s;
+    margin-top:6px;
+    letter-spacing:0.3px;
+}
+.login-btn:hover{ opacity:0.88; }
+.login-btn:active{ transform:scale(0.98); }
+.login-btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
+.login-footer{
+    text-align:center; margin-top:18px;
+    font-size:11px; color:#94a3b8; font-weight:500;
+}
+
+/* User menu (top-left cog) */
+.user-menu-wrap{
+    position:relative;
+    flex-shrink:0;
+    display:none;
+    align-items:center;
+}
+.user-menu-btn{
+    display:flex; align-items:center; gap:7px;
+    background:var(--surface-2); border:1px solid var(--border);
+    padding:6px 12px 6px 10px; border-radius:10px;
+    font-size:12.5px; font-weight:600; color:#334155;
+    cursor:pointer; transition:0.14s;
+}
+.user-menu-btn:hover, .user-menu-wrap.open .user-menu-btn{
+    border-color:var(--blue-border); color:var(--blue);
+    background:#fff;
+}
+.user-menu-btn svg.cog-icon{ opacity:0.72; flex-shrink:0; }
+.user-menu-caret{
+    font-size:9px; opacity:0.55; margin-left:2px;
+}
+.user-menu-dropdown{
+    display:none;
+    position:absolute; top:calc(100% + 6px); right:0; left:auto;
+    min-width:148px;
+    background:var(--surface-solid);
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.12);
+    overflow:hidden; z-index:300;
+    padding:4px;
+}
+.user-menu-wrap.open .user-menu-dropdown{ display:block; }
+.user-menu-item{
+    display:flex; align-items:center; gap:8px;
+    width:100%; text-align:left;
+    background:none; border:none;
+    padding:9px 12px; border-radius:7px;
+    font-size:12.5px; font-weight:600; color:#334155;
+    cursor:pointer; font-family:var(--body);
+}
+.user-menu-item:hover{ background:var(--blue-soft); color:var(--blue); }
+.user-menu-item.danger:hover{ background:var(--red-soft); color:var(--red); }
+
+/* ── Preview eye button on dept cards ── */
+.btn-preview-eye{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:30px; height:30px; border-radius:7px;
+    background:rgba(59,130,246,0.09); border:1px solid rgba(59,130,246,0.22);
+    color:#2563eb; cursor:pointer; flex-shrink:0;
+    transition:background-color 0.14s ease, color 0.14s ease, transform 0.12s ease;
+    padding:0;
+}
+.btn-preview-eye:hover{ background:rgba(59,130,246,0.18); color:#1e3a8a; }
+.btn-preview-eye:active{ transform:scale(0.94); }
+
+/* ── Fullscreen preview modal ── */
+#previewModal{
+    position:fixed; inset:0; z-index:10000;
+    display:flex; align-items:center; justify-content:center;
+    padding:12px;
+    background:rgba(10,18,36,0.78);
+    opacity:0; pointer-events:none;
+    transition:opacity 0.22s ease;
+}
+#previewModal.pm-open{
+    opacity:1; pointer-events:all;
+}
+.pm-box{
+    position:relative;
+    width:calc(100vw - 24px); height:calc(100vh - 24px);
+    max-width:calc(100vw - 24px); max-height:calc(100vh - 24px);
+    background:#0f172a; border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 24px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.07);
+    transform:scale(0.97); opacity:0;
+    transition:transform 0.22s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease;
+    display:flex; flex-direction:column;
+}
+#previewModal.pm-open .pm-box{
+    transform:scale(1); opacity:1;
+}
+.pm-topbar{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px 10px 18px;
+    background:rgba(15,23,42,0.95);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    gap:12px;
+}
+.pm-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; font-weight:600; letter-spacing:0.5px;
+    color:rgba(255,255,255,0.75); white-space:nowrap;
+}
+.pm-close{
+    display:flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:8px;
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+    color:rgba(255,255,255,0.7); cursor:pointer; font-size:18px; line-height:1;
+    transition:background-color 0.14s ease, color 0.14s ease;
+    flex-shrink:0; padding:0;
+}
+.pm-close:hover{ background:rgba(225,29,72,0.22); color:#fff; border-color:rgba(225,29,72,0.4); }
+.pm-iframe-wrap{
+    flex:1 1 auto; min-height:0; position:relative;
+}
+#previewFrame{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    border:none; display:block;
+    background:#fff;
+}
+@media(max-width:600px){
+    #previewModal{ padding:6px; }
+    .pm-box{ width:calc(100vw - 12px); height:calc(100vh - 12px); border-radius:10px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REVIEW REPORTS VIEW
+   ══════════════════════════════════════════════════════════ */
+
+/* ── View container ── */
+#view-reports{
+    flex:1 1 auto; min-height:0; overflow:hidden;
+    flex-direction:column; gap:14px;
+}
+
+.rr-header{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.rr-header h1{ font-size:17px; font-weight:700; letter-spacing:-0.02em; }
+
+/* ── Layout ── */
+.rr-body{
+    flex:1 1 auto; min-height:0; overflow:hidden;
+    display:grid;
+    grid-template-columns:280px minmax(0,1fr);
+    gap:14px;
+    align-items:stretch;
+}
+
+/* ── Sidebar ── */
+.rr-sidebar{
+    display:flex; flex-direction:column; gap:12px;
+}
+
+.rr-card{
+    background:rgba(255,255,255,0.97);
+    border:1px solid var(--border); border-radius:14px;
+    padding:14px 16px;
+    box-shadow:var(--shadow-sm);
+}
+
+.rr-card-title{
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;
+}
+
+/* ── Mini calendar ── */
+.rr-cal-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+}
+.rr-cal-month{
+    font-size:13px; font-weight:700; color:#0f172a;
+}
+.rr-cal-btn{
+    background:none; border:1px solid var(--border); border-radius:6px;
+    width:26px; height:26px; font-size:14px; font-weight:700;
+    color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:border-color 0.12s ease, color 0.12s ease;
+}
+.rr-cal-btn:hover{ border-color:var(--blue-border); color:var(--blue); }
+
+.rr-cal-grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
+}
+.rr-cal-dow{
+    text-align:center; font-size:9px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.4px; color:#94a3b8;
+    padding:3px 0;
+}
+.rr-cal-day{
+    text-align:center; padding:4px 0; border-radius:6px;
+    font-size:11.5px; font-weight:500; color:#64748b; cursor:default;
+    position:relative;
+}
+.rr-cal-day.has-report{
+    color:#1e3a8a; font-weight:700; cursor:pointer;
+    background:var(--blue-soft); border:1px solid var(--blue-border);
+}
+.rr-cal-day.has-report:hover{ background:rgba(59,130,246,0.18); }
+.rr-cal-day.selected{
+    background:var(--blue) !important; color:#fff !important;
+    border-color:var(--blue) !important;
+}
+.rr-cal-day.today{ outline:2px solid var(--blue-mid); outline-offset:-2px; }
+.rr-cal-day.empty{ opacity:0; pointer-events:none; }
+
+/* ── Quick range buttons ── */
+.rr-range-row{ display:flex; flex-direction:column; gap:6px; }
+.rr-range-btn{
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:8px; padding:9px 12px;
+    font-size:12px; font-weight:600; color:#334155; cursor:pointer;
+    text-align:left; display:flex; align-items:center; justify-content:space-between;
+    transition:border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+.rr-range-btn:hover{ border-color:var(--blue-border); color:var(--blue); background:#fff; }
+.rr-range-btn.active{ background:var(--blue); color:#fff; border-color:var(--blue); }
+.rr-range-btn svg{ opacity:0.55; flex-shrink:0; }
+.rr-range-btn.active svg{ opacity:1; }
+
+/* ── Main content area ── */
+.rr-main{
+    background:rgba(255,255,255,0.97);
+    border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow-sm);
+    display:flex; flex-direction:column;
+    min-height:0; overflow:hidden;
+}
+
+.rr-main-header{
+    flex:0 0 auto; padding:14px 18px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface-2);
+}
+.rr-main-title{ font-size:14px; font-weight:700; color:#0f172a; }
+.rr-main-sub{ font-size:11px; color:var(--text-muted); margin-top:2px; }
+.rr-period-badge{
+    font-family:var(--mono); font-size:10.5px; font-weight:600;
+    padding:5px 10px; background:var(--blue-soft); color:var(--blue);
+    border:1px solid var(--blue-border); border-radius:999px; white-space:nowrap;
+}
+
+.rr-main-body{ flex:1 1 auto; padding:16px 18px; overflow:auto; }
+
+/* ── Empty / loading states ── */
+.rr-empty{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:60px 20px; color:#94a3b8; text-align:center; gap:10px;
+}
+.rr-empty svg{ opacity:0.35; }
+.rr-empty p{ font-size:13px; font-weight:500; }
+.rr-empty small{ font-size:11px; }
+
+.rr-loading{
+    display:flex; align-items:center; justify-content:center;
+    padding:60px; color:var(--text-muted); font-size:13px; gap:10px;
+}
+.rr-spinner{
+    width:18px; height:18px; border-radius:50%;
+    border:2px solid var(--blue-soft); border-top-color:var(--blue);
+    animation:spin 0.7s linear infinite; flex-shrink:0;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ── Report summary tiles ── */
+.rr-kpi-row{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:10px; margin-bottom:16px;
+}
+@media(max-width:900px){ .rr-kpi-row{ grid-template-columns:repeat(2,1fr); } }
+
+.rr-kpi{
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px;
+}
+.rr-kpi-label{
+    font-size:9px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text-muted); font-weight:700; margin-bottom:4px;
+}
+.rr-kpi-value{ font-size:22px; font-weight:800; color:#0f172a; line-height:1; }
+.rr-kpi-sub{ font-size:10px; color:#64748b; margin-top:3px; }
+
+/* ── Chart inside report ── */
+.rr-chart-wrap{
+    width:100%; height:140px; position:relative;
+    border-radius:10px; overflow:hidden; margin-bottom:16px;
+    background:linear-gradient(180deg,rgba(248,250,252,0.95),rgba(255,255,255,0.6));
+    border:1px solid rgba(148,163,184,0.20);
+}
+.rr-chart-wrap canvas{ display:block; width:100%; height:100%; }
+
+.rr-chart-header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; flex-wrap:wrap; margin-bottom:8px;
+}
+.rr-chart-header .rr-section-title{ margin-bottom:0; }
+
+/* ── Dept breakdown table ── */
+.rr-dept-table{
+    width:100%; border-collapse:collapse; font-size:12.5px;
+    margin-bottom:16px;
+}
+.rr-dept-table th{
+    background:var(--surface-2); padding:9px 12px;
+    text-align:left; font-size:10px; text-transform:uppercase;
+    letter-spacing:0.45px; color:#475569; font-weight:700;
+    border-bottom:2px solid var(--border);
+}
+.rr-dept-table th:not(:first-child){ text-align:center; }
+.rr-dept-table td{
+    padding:9px 12px; border-bottom:1px solid rgba(148,163,184,0.18);
+    color:#0f172a;
+}
+.rr-dept-table td:not(:first-child){ text-align:center; font-family:var(--mono); }
+.rr-dept-table tbody tr:nth-child(even) td{ background:rgba(248,250,252,0.8); }
+.rr-dept-name{
+    font-weight:700; display:flex; align-items:center; gap:8px;
+}
+.rr-dept-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.rr-pct-bar{
+    height:5px; background:#e2e8f0; border-radius:999px; overflow:hidden;
+    margin-top:4px;
+}
+.rr-pct-fill{ height:100%; border-radius:999px; }
+
+/* ── Category breakdown ── */
+.rr-section-title{
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.5px; color:#475569; margin-bottom:8px;
+}
+.rr-cat-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+    gap:8px; margin-bottom:16px;
+}
+.rr-cat-tile{
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:8px; padding:8px 10px;
+}
+.rr-cat-name{
+    font-size:10px; text-transform:uppercase; letter-spacing:0.4px;
+    color:#64748b; font-weight:700; margin-bottom:4px;
+}
+.rr-cat-val{ font-size:18px; font-weight:800; color:#0f172a; }
+.rr-cat-dept{ font-size:9.5px; color:#94a3b8; margin-top:2px; }
+
+/* ── Weekly / monthly / annual day list ── */
+.rr-day-list{ display:flex; flex-direction:column; gap:6px; }
+.rr-day-row{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 10px; border-radius:8px;
+    background:var(--surface-2); border:1px solid rgba(148,163,184,0.18);
+}
+.rr-day-date{
+    font-family:var(--mono); font-size:11px; color:#64748b;
+    min-width:100px; flex-shrink:0;
+}
+.rr-day-bar-wrap{
+    flex:1 1 auto; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;
+}
+.rr-day-bar-fill{ height:100%; border-radius:999px; background:#2563eb; }
+.rr-day-total{
+    font-family:var(--mono); font-size:12px; font-weight:700;
+    color:#0f172a; min-width:40px; text-align:right; flex-shrink:0;
+}
+.rr-day-badge{
+    font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:999px;
+    background:var(--red-soft); color:var(--red); border:1px solid var(--red-border);
+    flex-shrink:0; white-space:nowrap;
+}
+
+/* ── Error state ── */
+.rr-error{
+    background:var(--red-soft); border:1px solid var(--red-border);
+    color:var(--red); padding:12px 14px; border-radius:9px;
+    font-size:13px; font-weight:600; margin:16px 0;
+}
+
+/* Activity logs modal */
+.logs-modal-content{ max-width:920px; width:94vw; }
+.logs-body{
+    flex:1 1 auto; min-height:0; max-height:58vh;
+    overflow:auto; border:1px solid var(--border);
+    border-radius:10px; background:var(--surface-2);
+}
+.logs-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.logs-table th{
+    position:sticky; top:0; z-index:1;
+    background:#e8edf4; padding:10px 12px;
+    text-align:left; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:0.45px; color:#475569; font-weight:700;
+    border-bottom:1px solid var(--border);
+}
+.logs-table td{
+    padding:10px 12px; border-bottom:1px solid rgba(148,163,184,0.20);
+    vertical-align:top; color:#0f172a;
+}
+.logs-table tbody tr:nth-child(even) td{ background:rgba(255,255,255,0.55); }
+.logs-table tbody tr:hover td{ background:rgba(59,130,246,0.05); }
+.logs-time{ font-family:var(--mono); font-size:11px; color:#64748b; white-space:nowrap; }
+.logs-user{ font-weight:700; color:#1e3a8a; }
+.logs-dept{
+    font-family:var(--mono); font-size:10px; font-weight:700;
+    padding:3px 7px; border-radius:999px;
+    background:var(--blue-soft); color:var(--blue);
+}
+.logs-action{
+    font-size:10.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.4px; color:#64748b;
+}
+.logs-detail{ color:#334155; line-height:1.45; font-size:12px; }
+.logs-empty{
+    padding:40px 16px; text-align:center;
+    color:var(--text-muted); font-size:13px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="bg-watermark" aria-hidden="true"></div>
+
+<div class="app">
+
+    <div class="topnav">
+        <div class="brand">
+            <img src="logo.png" class="logo-img" alt="Logo"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div style="display:none;width:68px;height:68px;background:var(--blue-soft);border:1px solid var(--blue-border);border-radius:8px;align-items:center;justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="#1e40af" stroke-width="1.8"/>
+                    <path d="M8 12l3 3 5-5" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="brand-text">QC Control<br>Center</div>
+        </div>
+
+        <div class="nav-tabs" id="navTabs"></div>
+
+        <div class="status-cluster">
+            <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+            <div class="clock-box">
+                <div id="clock">00:00:00</div>
+                <div id="date">Loading…</div>
+            </div>
+            <div class="user-menu-wrap" id="userMenuWrap">
+                <button class="user-menu-btn" id="userMenuBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                    <svg class="cog-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span id="userMenuLabel">User</span>
+                    <span class="user-menu-caret">▾</span>
+                </button>
+                <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <button class="user-menu-item" type="button" onclick="openLogsModal()">Logs</button>
+                    <button class="user-menu-item danger" type="button" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="view-container">
+
+        <div class="error-banner" id="errorBanner" style="display:none;"></div>
+
+        <!-- OVERVIEW -->
+        <div class="view active" id="view-overview">
+            <div class="overview-header">
+                <div>
+                    <h1>Overview</h1>
+                    <p>Live snapshot across all departments — counts refresh every second.</p>
+                </div>
+                <div class="overview-shift" id="overviewShift">—</div>
+            </div>
+
+            <div class="overview-body">
+                <div class="overview-kpi-row" id="overviewKpiRow"></div>
+
+                <div class="overview-split">
+                    <div class="chart-panel" id="chartPanel">
+                        <div class="chart-panel-header">
+                            <span class="chart-panel-title">Daily Defect Activity — Hourly</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#2563eb;"></div>
+                                    CUTTING
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#e11d48;"></div>
+                                    EMBRO
+                                </div>
+                                <span class="chart-meta" id="chartResetLabel">Resets at 06:00</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-wrap" id="chartWrap">
+                            <div class="chart-empty" id="chartEmpty">No save events yet today — data will appear after the first update.</div>
+                            <canvas id="activityChart" style="display:none;"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="insights-stack">
+                        <div class="compare-panel" id="deptComparePanel"></div>
+                        <div class="recent-panel">
+                            <div class="panel-title">Recent Activity</div>
+                            <div class="recent-list" id="recentActivityList">
+                                <div class="recent-empty">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dept-grid" id="deptGrid"></div>
+            </div>
+        </div>
+
+        <!-- REPORTS REVIEW -->
+        <div class="view" id="view-reports">
+            <div class="rr-header">
+                <h1>Review Reports</h1>
+                <span class="overview-shift" id="rrShiftBadge" style="font-size:10.5px;">—</span>
+            </div>
+
+            <div class="rr-body">
+                <!-- Sidebar: calendar + quick ranges -->
+                <div class="rr-sidebar">
+
+                    <!-- Mini calendar -->
+                    <div class="rr-card">
+                        <div class="rr-card-title">Select Date</div>
+                        <div class="rr-cal-nav">
+                            <button class="rr-cal-btn" id="calPrev" onclick="rrCalPrev()" title="Previous month">&#8249;</button>
+                            <span class="rr-cal-month" id="calMonthLabel">—</span>
+                            <button class="rr-cal-btn" id="calNext" onclick="rrCalNext()" title="Next month">&#8250;</button>
+                        </div>
+                        <div class="rr-cal-grid" id="calGrid"></div>
+                    </div>
+
+                    <!-- Quick ranges -->
+                    <div class="rr-card">
+                        <div class="rr-card-title">Quick View</div>
+                        <div class="rr-range-row">
+                            <button class="rr-range-btn" id="rrBtnWeek" onclick="rrLoadWeek()">
+                                <span>This Week</span>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            </button>
+                            <button class="rr-range-btn" id="rrBtnMonth" onclick="rrLoadMonth()">
+                                <span>This Month</span>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            </button>
+                            <button class="rr-range-btn" id="rrBtnYear" onclick="rrLoadYear()">
+                                <span>This Year</span>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Main report panel -->
+                <div class="rr-main" id="rrMain">
+                    <div class="rr-main-header">
+                        <div>
+                            <div class="rr-main-title" id="rrMainTitle">Select a date or period</div>
+                            <div class="rr-main-sub" id="rrMainSub">Use the calendar or quick-view buttons on the left</div>
+                        </div>
+                        <span class="rr-period-badge" id="rrPeriodBadge" style="display:none;"></span>
+                    </div>
+                    <div class="rr-main-body" id="rrMainBody">
+                        <div class="rr-empty">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#94a3b8" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/><path d="M8 14h4M8 17h8" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            <p>No report selected</p>
+                            <small>Pick a day on the calendar or choose a quick-view range</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETAIL -->
+        <div class="view" id="view-detail">
+            <div class="detail-header">
+                <div class="detail-header-left">
+                    <button class="btn-ghost-sm" onclick="location.hash='#/'">&larr; Overview</button>
+                    <span class="detail-divider"></span>
+                    <span class="dept-code" id="detailCode"></span>
+                    <span class="table-title" id="detailTableTitle">Inspection log</span>
+                </div>
+                <div class="detail-header-right">
+                    <div class="live-monitor">Live total: <span class="live-number" id="detailLiveTotal">0</span></div>
+                    <button class="btn-preview-eye" id="detailPreviewBtn" title="Preview live view" aria-label="Preview live view" style="width:36px;height:36px;border-radius:8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <ellipse cx="12" cy="12" rx="10" ry="6.5" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="12" cy="12" r="2.8" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn btn-reset" id="detailResetBtn">↺ Reset</button>
+                    <button class="action-btn btn-excel" id="detailExportBtn">↓ Export Excel</button>
+                    <button class="action-btn btn-update" style="flex:none;" id="detailUpdateBtn">Update</button>
+                </div>
+            </div>
+
+            <div class="detail-stats">
+                <div class="stat-chip">Employees&nbsp;<b id="detailEmpCount">0</b></div>
+                <div class="stat-chip">Defects logged&nbsp;<b id="detailDefectCount">0</b></div>
+                <div class="stat-chip">Most frequent&nbsp;<b id="detailTopCat">—</b></div>
+            </div>
+
+            <div class="table-wrapper">
+                <div class="table-scroll">
+                    <div id="detailTableContainer"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Dedicated blur layer — sits behind loginOverlay on its own compositor tile.
+     Keeping backdrop-filter here prevents it from repainting when the user types. -->
+<div id="loginBlur" aria-hidden="true"></div>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="loginOverlay">
+    <div class="login-glow">
+
+        <!-- Logo floats above the card -->
+        <div class="login-logo-above">
+            <img src="logo.png" alt="Logo"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="logo-fallback-above" style="display:none;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.80)" stroke-width="1.8"/>
+                    <path d="M8 12l3 3 5-5" stroke="rgba(255,255,255,0.80)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- White login card -->
+        <div class="login-box">
+            <div class="login-title">QC Control Center</div>
+            <div class="login-subtitle">Sign in to access the dashboard</div>
+
+            <div class="login-error" id="loginError">Incorrect username or password.</div>
+
+            <div class="login-field">
+                <label class="login-label" for="loginUser">Username</label>
+                <input class="login-input" type="text" id="loginUser"
+                       placeholder="Enter username" autocomplete="username" spellcheck="false">
+            </div>
+
+            <div class="login-field">
+                <label class="login-label" for="loginPass">Password</label>
+                <input class="login-input" type="password" id="loginPass"
+                       placeholder="Enter password" autocomplete="current-password">
+            </div>
+
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+
+            <div class="login-footer">QC Control Center &mdash; Authorized access only</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PREVIEW MODAL ===== -->
+<div id="previewModal" role="dialog" aria-modal="true" aria-label="Live Preview">
+    <div class="pm-box">
+        <div class="pm-topbar">
+            <span class="pm-title" id="previewModalTitle">LIVE PREVIEW</span>
+            <button class="pm-close" id="previewCloseBtn" aria-label="Close preview">&#x2715;</button>
+        </div>
+        <div class="pm-iframe-wrap">
+            <!-- iframe injected here on open, removed on close -->
+        </div>
+    </div>
+</div>
+
+<!-- LOGS MODAL -->
+<div class="modal" id="logsModal">
+    <div class="modal-content logs-modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Audit trail</div>
+                <h2>Activity Logs</h2>
+            </div>
+            <button class="close-btn" onclick="closeLogsModal()" aria-label="Close">×</button>
+        </div>
+        <div id="logsBody" class="logs-body">
+            <div class="logs-empty">Loading logs…</div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Edit console</div>
+                <h2 id="consoleDeptName">Department</h2>
+            </div>
+            <button class="close-btn" onclick="closeModal()" aria-label="Close">×</button>
+        </div>
+        <div id="consoleBody"></div>
+        <div class="modal-actions">
+            <button class="action-btn btn-add-emp" onclick="addEmployeeRow()">+ Add Employee</button>
+            <div style="flex:1;"></div>
+            <button class="action-btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="action-btn btn-save" onclick="saveConsole()">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+let allDepartments = {};
+let currentView = 'overview';
+let currentDepartment = null;
+let currentConsoleDept = null;
+let currentUsername = null;
+let deletedConsoleRows = new Set();
+const DEPT_CODES = {};
+
+function debounce(fn, delay){
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+
+// ── Auth gate ────────────────────────────────────────────────────────────────
+// All live-refresh intervals are created ONLY after login and cleared on logout.
+// Nothing polls the server or re-renders while the user isn't authenticated.
+let isLoggedIn = false;
+let _refreshInterval  = null;   // 1 s dept poll
+let _chartInterval    = null;   // 5 s chart poll
+let _clockInterval    = null;   // 1 s clock tick
+
+// Distinct color per defect category column in the edit console, cycling
+// if there are more categories than colors.
+const CONSOLE_COLORS = ['#c89b1c','#a78bda','#16a34a','#2563eb','#ea7c1f','#dc2626','#0d9488','#7c3aed','#c2410c'];
+function formatCatLabel(cat){ return cat.replace(/_/g, ' '); }
+
+/**
+ * Case-insensitive defect value lookup.
+ * The tray app may write lowercase keys (wrong_color) while the admin
+ * dashboard expects uppercase (WRONG_COLOR). This bridges that gap on
+ * the client side so the edit modal always shows the correct counts
+ * even if stale data reaches the browser before the server normalises it.
+ */
+function getDefectVal(defects, cat){
+    if(!defects) return 0;
+    if(cat in defects) return parseInt(defects[cat]) || 0;
+    const upper = cat.toUpperCase();
+    for(const k of Object.keys(defects)){
+        if(k.toUpperCase() === upper) return parseInt(defects[k]) || 0;
+    }
+    return 0;
+}
+
+/* ===== API ===== */
+
+async function fetchDepartments(){
+    const res = await fetch('/api/departments');
+    if(!res.ok) throw new Error('Server responded ' + res.status);
+    return res.json();
+}
+
+async function pushUpdate(department, employees){
+    const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            department,
+            employees,
+            updated_by: getCurrentUser()
+        })
+    });
+    const body = await res.json().catch(() => ({}));
+    if(!res.ok || body.ok === false) throw new Error(body.error || 'Server error');
+    return body;
+}
+
+/* ===== EXPORT TO EXCEL ===== */
+
+async function exportDepartment(dept){
+    try {
+        const res = await fetch('/api/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ department: dept })
+        });
+
+        if(!res.ok){
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || 'Export failed');
+        }
+
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : (dept + '_defects.xlsx');
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        showToast('Excel file downloaded.', 'success');
+    } catch(e) {
+        showToast("Couldn't export — " + e.message, 'error');
+    }
+}
+
+/* ===== RESET COUNTERS ===== */
+
+async function resetDepartment(dept){
+    if(!confirm('Reset ALL counters for ' + dept + ' to zero? This cannot be undone.')) return;
+
+    try {
+        const res = await fetch('/api/reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                department: dept,
+                updated_by: getCurrentUser()
+            })
+        });
+        const body = await res.json().catch(() => ({}));
+        if(!res.ok || body.ok === false) throw new Error(body.error || 'Reset failed');
+
+        allDepartments = await fetchDepartments();
+
+        if(currentView === 'overview') renderOverviewFull();
+        if(currentView === 'detail' && currentDepartment === dept){
+            renderDetailStats(dept);
+            renderDetailTable(dept);
+        }
+
+        showToast('Counters reset for ' + dept + '.', 'success');
+    } catch(e) {
+        showToast("Couldn't reset — " + e.message, 'error');
+    }
+}
+
+/* ===== CLOCK ===== */
+
+function updateClock(){
+    const now = new Date();
+    document.getElementById('clock').innerText = now.toLocaleTimeString();
+    document.getElementById('date').innerText = now.toDateString();
+}
+
+/* ===== LOAD ===== */
+
+async function loadDepartments(){
+    const banner = document.getElementById('errorBanner');
+    try {
+        allDepartments = await fetchDepartments();
+        banner.style.display = 'none';
+    } catch(e) {
+        banner.style.display = 'block';
+        banner.innerText = "Cannot reach the QC server. Make sure admin_server.py is running and open this page at http://localhost:5050";
+        return;
+    }
+    Object.keys(allDepartments).forEach(dept => {
+        DEPT_CODES[dept] = dept.slice(0,2).toUpperCase();
+    });
+    renderNavTabs();
+    fetchChartLog();
+    route();
+}
+
+/* ===== HELPERS ===== */
+
+function deptStats(dept){
+    const employees = (allDepartments[dept] && allDepartments[dept].employees) || [];
+    let total = 0;
+    employees.forEach(emp => Object.values(emp.defects).forEach(n => total += n));
+    return { employeeCount: employees.length, total };
+}
+
+function topCategory(dept){
+    const info = topCategoryInfo(dept);
+    return info.value > 0 ? info.label + ' (' + info.value + ')' : '—';
+}
+
+function defectValue(defects, cat){
+    if(!defects) return 0;
+    const key = Object.keys(defects).find(k => k.toUpperCase() === String(cat).toUpperCase());
+    return key ? (parseInt(defects[key]) || 0) : 0;
+}
+
+function topCategoryInfo(dept){
+    const employees = (allDepartments[dept] && allDepartments[dept].employees) || [];
+    if(employees.length === 0) return { label: '—', value: 0 };
+    const categories = getDeptCategories(dept, employees);
+    let best = null, bestVal = -1;
+    categories.forEach(cat => {
+        const sum = employees.reduce((acc, emp) => acc + defectValue(emp.defects, cat), 0);
+        if(sum > bestVal){ bestVal = sum; best = cat; }
+    });
+    return {
+        label: best ? best.replace(/_/g, ' ') : '—',
+        value: Math.max(0, bestVal)
+    };
+}
+
+function deptStatusLevel(total){
+    if(total > 25) return { cls: 'alert', text: 'Critical' };
+    if(total > 12) return { cls: 'watch', text: 'Watch' };
+    return { cls: 'ok', text: 'Clear' };
+}
+
+function getShiftLabel(){
+    const hour = new Date().getHours();
+    return (hour >= 6 && hour < 18) ? 'Morning shift · 06:00 – 18:00' : 'Night shift · 18:00 – 06:00';
+}
+
+function getOverviewSummary(){
+    const depts = Object.keys(allDepartments);
+    let combinedDefects = 0, combinedEmployees = 0, leader = '—', leaderVal = -1;
+
+    depts.forEach(dept => {
+        const { employeeCount, total } = deptStats(dept);
+        combinedDefects += total;
+        combinedEmployees += employeeCount;
+        if(total > leaderVal){ leaderVal = total; leader = dept; }
+    });
+
+    const savesToday = (chartLog.entries || []).length;
+    return { depts, combinedDefects, combinedEmployees, leader, leaderVal, savesToday };
+}
+
+function formatAuditTimestamp(iso){
+    if(!iso) return '—';
+    try {
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, {
+            month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', second: '2-digit'
+        });
+    } catch(e){
+        return iso;
+    }
+}
+
+function formatCardUpdatedBy(dept){
+    const data = allDepartments[dept] || {};
+    const by = (data.last_updated_by || '').trim();
+    if(by) return 'Last updated by: <b>' + by + '</b>';
+    if(data.last_updated) return 'Last updated via <b>QC station</b>';
+    return 'Last updated by: <b>—</b>';
+}
+
+let auditLogCache = { entries: [] };
+let auditLogFetchedAt = 0;
+
+async function refreshAuditLogCache(force){
+    if(!force && Date.now() - auditLogFetchedAt < 8000) return;
+    try {
+        const data = await fetchAuditLog();
+        auditLogCache = data;
+        auditLogFetchedAt = Date.now();
+    } catch(e){ /* ignore */ }
+}
+
+/* ─── PERF: KPI tiles are initialised once (renderOverviewKpisInit) and then
+   updated in-place via renderOverviewKpisUpdate.  Previously the entire row was
+   rebuilt with innerHTML every second, which caused ~4 DOM node removals,
+   ~20 node creations, style recalculations and a layout reflow per cycle.
+   Now only the 3 text strings that actually change are touched. ─── */
+
+function renderOverviewKpisInit(s){
+    const row = document.getElementById('overviewKpiRow');
+    if(!row) return;
+    if(!s) s = getOverviewSummary();
+    const avgPerOp = s.combinedEmployees ? (s.combinedDefects / s.combinedEmployees).toFixed(1) : '0.0';
+    const leaderText = s.leaderVal >= 0 ? s.leader + ' (' + s.leaderVal + ')' : '—';
+
+    row.innerHTML =
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Combined defects</div>' +
+            '<div class="kpi-value" id="kpiDefects">' + s.combinedDefects + '</div>' +
+            '<div class="kpi-sub" id="kpiDefectsSub">Across ' + s.depts.length + ' departments today</div>' +
+        '</div>' +
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Operators tracked</div>' +
+            '<div class="kpi-value" id="kpiOps">' + s.combinedEmployees + '</div>' +
+            '<div class="kpi-sub" id="kpiOpsSub">Avg ' + avgPerOp + ' defects per operator</div>' +
+        '</div>' +
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Highest department</div>' +
+            '<div class="kpi-value" id="kpiLeader" style="font-size:20px;padding-top:4px;">' + (s.leaderVal > 0 ? s.leader : '—') + '</div>' +
+            '<div class="kpi-sub" id="kpiLeaderSub">' + (s.leaderVal > 0 ? s.leaderVal + ' defects logged' : 'All departments clear') + '</div>' +
+        '</div>' +
+        '<div class="kpi-tile">' +
+            '<div class="kpi-label">Saves today</div>' +
+            '<div class="kpi-value" id="kpiSaves">' + s.savesToday + '</div>' +
+            '<div class="kpi-sub">Chart log · resets 06:00</div>' +
+        '</div>';
+    _kpiInited = true;
+}
+
+let _kpiInited = false;
+
+/* Cached DOM refs to avoid querySelector every second */
+const _kpiRefs = {};
+function _kpiEl(id){ return _kpiRefs[id] || (_kpiRefs[id] = document.getElementById(id)); }
+
+function setTextIfChanged(el, text){
+    /* PERF: Only touches the DOM if the string actually changed.
+       Avoids triggering a style recalculation + paint for unchanged tiles. */
+    if(el && el.textContent !== text) el.textContent = text;
+}
+
+function renderOverviewKpisUpdate(s){
+    setTextIfChanged(_kpiEl('kpiDefects'),    String(s.combinedDefects));
+    setTextIfChanged(_kpiEl('kpiDefectsSub'), 'Across ' + s.depts.length + ' departments today');
+    setTextIfChanged(_kpiEl('kpiOps'),        String(s.combinedEmployees));
+    const avgPerOp = s.combinedEmployees ? (s.combinedDefects / s.combinedEmployees).toFixed(1) : '0.0';
+    setTextIfChanged(_kpiEl('kpiOpsSub'),     'Avg ' + avgPerOp + ' defects per operator');
+    setTextIfChanged(_kpiEl('kpiLeader'),     s.leaderVal > 0 ? s.leader : '—');
+    setTextIfChanged(_kpiEl('kpiLeaderSub'),  s.leaderVal > 0 ? s.leaderVal + ' defects logged' : 'All departments clear');
+    setTextIfChanged(_kpiEl('kpiSaves'),      String(s.savesToday));
+}
+
+function renderOverviewKpis(s){
+    if(!s) s = getOverviewSummary();
+    if(!_kpiInited || !document.getElementById('kpiDefects')){
+        renderOverviewKpisInit(s);
+    } else {
+        renderOverviewKpisUpdate(s);
+    }
+}
+
+/* PERF: renderDeptCompare used to rebuild the entire panel HTML every second.
+   Now it initialises once (IDs on key elements) and only patches the changing
+   values (number text + bar width) on subsequent calls.
+   Bar width animates via the existing CSS transition:width 0.35s ease. */
+
+let _compareInited = false;
+
+function renderDeptCompare(s){
+    const panel = document.getElementById('deptComparePanel');
+    if(!panel) return;
+
+    const depts  = Object.keys(allDepartments);
+    const totals = depts.map(dept => ({ dept, ...deptStats(dept) }));
+    const maxTotal  = Math.max(1, ...totals.map(t => t.total));
+    const combined  = s ? s.combinedDefects : totals.reduce((a, t) => a + t.total, 0);
+    const colors = { CUTTING: '#2563eb', EMBRO: '#e11d48' };
+
+    if(!_compareInited || !panel.querySelector('.compare-row')){
+        /* First paint — build the full structure with stable IDs */
+        let html = '<div class="panel-title">Department Comparison</div>';
+        totals.forEach(item => {
+            const pct    = combined > 0 ? Math.round(item.total / combined * 100) : 0;
+            const barPct = Math.max(4, Math.round(item.total / maxTotal * 100));
+            const color  = colors[item.dept] || '#64748b';
+            html +=
+                '<div class="compare-row">' +
+                    '<div class="compare-head">' +
+                        '<span class="compare-name"><span class="compare-dot" style="background:' + color + ';"></span>' + item.dept + '</span>' +
+                        '<span class="compare-val" id="cmpVal-' + item.dept + '">' + item.total + ' <span style="color:#94a3b8;font-weight:500;">(' + pct + '%)</span></span>' +
+                    '</div>' +
+                    '<div class="compare-bar"><div class="compare-fill" id="cmpBar-' + item.dept + '" style="width:' + barPct + '%;background:' + color + ';"></div></div>' +
+                '</div>';
+        });
+        html += '<div class="compare-foot" id="cmpFoot"></div>';
+        panel.innerHTML = html;
+        _compareInited = true;
+    } else {
+        /* Subsequent paints — patch only numbers and bar widths */
+        totals.forEach(item => {
+            const pct    = combined > 0 ? Math.round(item.total / combined * 100) : 0;
+            const barPct = Math.max(4, Math.round(item.total / maxTotal * 100));
+            const valEl  = document.getElementById('cmpVal-' + item.dept);
+            const barEl  = document.getElementById('cmpBar-' + item.dept);
+            if(valEl){
+                const newText = item.total + ' ';
+                const span    = valEl.querySelector('span');
+                if(valEl.firstChild && valEl.firstChild.nodeType === 3){
+                    if(valEl.firstChild.textContent !== newText) valEl.firstChild.textContent = newText;
+                }
+                if(span){ const t = '(' + pct + '%)'; if(span.textContent !== t) span.textContent = t; }
+            }
+            if(barEl){ const w = barPct + '%'; if(barEl.style.width !== w) barEl.style.width = w; }
+        });
+    }
+
+    const note = combined === 0
+        ? 'Both departments are currently at <b>zero defects</b>.'
+        : (totals[0].total === totals[1]?.total
+            ? 'Both departments are <b>tied</b> at ' + totals[0].total + ' defects.'
+            : 'Plant total: <b>' + combined + '</b> defects logged today.');
+    const foot = document.getElementById('cmpFoot');
+    if(foot && foot.innerHTML !== note) foot.innerHTML = note;
+}
+
+/* PERF: Recent activity list — only rebuilds if the top entry changed.
+   Previously every second we destroyed and recreated all 3 items even when
+   nothing had changed (audit log is only fetched every 8 s). */
+let _lastRecentKey = '';
+
+function renderRecentActivity(){
+    const list = document.getElementById('recentActivityList');
+    if(!list) return;
+
+    const entries = (auditLogCache.entries || []).slice(0, 3);
+
+    /* Build a cheap fingerprint — if nothing changed, skip DOM work entirely */
+    const key = entries.map(e => e.timestamp + e.user + e.department).join('|');
+    if(key === _lastRecentKey) return;
+    _lastRecentKey = key;
+
+    if(!entries.length){
+        list.innerHTML = '<div class="recent-empty">No monitor saves logged yet today.</div>';
+        return;
+    }
+
+    list.innerHTML = entries.map(entry => {
+        const when = formatAuditTimestamp(entry.timestamp);
+        const who  = entry.user || 'unknown';
+        const dept = entry.department || '—';
+        const detail = entry.summary || entry.action || 'update';
+        return '<div class="recent-item">' +
+            '<div class="recent-item-time">' + when + '</div>' +
+            '<div class="recent-item-text"><b>' + who + '</b> · ' + dept + ' — ' + detail + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+/* PERF: renderOverviewCards used to destroy and recreate all card DOM nodes
+   every second (grid.innerHTML = '').  That caused ~200 DOM mutations per cycle
+   across both cards, triggering a full layout reflow each time.
+
+   New approach:
+   - _renderOverviewCardsInit() creates each card once and caches refs to
+     every element that might change (status badge, metric values, insights).
+   - renderOverviewCards() patches only the text/class/style nodes that differ
+     from last render.  If nothing changed, zero DOM writes happen. */
+
+const _cardCache = {};   // dept → { card, refs } cached DOM references
+
+function _renderOverviewCardsInit(dept, grid, summary){
+    const { employeeCount, total } = deptStats(dept);
+    const color  = total > 25 ? 'var(--red-mid)' : total > 12 ? '#d97706' : 'var(--green)';
+    const status = deptStatusLevel(total);
+    const topCat = topCategoryInfo(dept);
+    const avg    = employeeCount ? (total / employeeCount).toFixed(1) : '0.0';
+    const share  = summary.combinedDefects > 0 ? Math.round(total / summary.combinedDefects * 100) : 0;
+    const data   = allDepartments[dept] || {};
+    const updatedAt = data.last_updated ? formatAuditTimestamp(data.last_updated) : '—';
+
+    const card = document.createElement('div');
+    card.className = 'dept-card dept-' + dept.toLowerCase();
+    card.innerHTML =
+        '<div class="dept-card-top">' +
+            '<div class="dept-card-top-left">' +
+                '<span class="dept-code">' + DEPT_CODES[dept] + '</span>' +
+                '<span class="dept-card-name">' + dept + '</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
+                '<span class="dept-status ' + status.cls + '">' + status.text + '</span>' +
+                '<button class="btn-preview-eye" title="Preview ' + dept + ' live view" aria-label="Preview ' + dept + '">' +
+                    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+                        '<ellipse cx="12" cy="12" rx="10" ry="6.5" stroke="currentColor" stroke-width="2"/>' +
+                        '<circle cx="12" cy="12" r="2.8" fill="currentColor"/>' +
+                    '</svg>' +
+                '</button>' +
+            '</div>' +
+        '</div>' +
+        '<div class="dept-card-metrics">' +
+            '<div class="metric"><span class="metric-value roc-ops">' + employeeCount + '</span><span class="metric-label">Operators</span></div>' +
+            '<div class="metric"><span class="metric-value roc-def" style="color:' + color + ';">' + total + '</span><span class="metric-label">Defects</span></div>' +
+            '<div class="metric"><span class="metric-value roc-avg">' + avg + '</span><span class="metric-label">Avg / op</span></div>' +
+        '</div>' +
+        '<div class="dept-card-insights">' +
+            '<div class="insight-item">Top category<b class="roc-topcat">' + topCat.label + (topCat.value ? ' (' + topCat.value + ')' : '') + '</b></div>' +
+            '<div class="insight-item">Share of plant<b class="roc-share">' + share + '%</b></div>' +
+            '<div class="insight-item">Last activity<b class="roc-lastact">' + updatedAt + '</b></div>' +
+            '<div class="insight-item">Updated by<b class="roc-updby">' + ((data.last_updated_by || '').trim() || (data.last_updated ? 'QC station' : '—')) + '</b></div>' +
+        '</div>' +
+        '<div class="dept-card-actions">' +
+            '<button class="action-btn btn-view">View log</button>' +
+            '<button class="action-btn btn-update">Update</button>' +
+        '</div>' +
+        '<div class="dept-card-footer roc-footer">' + formatCardUpdatedBy(dept) + '</div>';
+
+    card.querySelector('.btn-view').onclick   = () => { location.hash = '#/dept/' + encodeURIComponent(dept); };
+    card.querySelector('.btn-update').onclick = () => openEditConsole(dept);
+    card.querySelector('.btn-preview-eye').onclick = (e) => { e.stopPropagation(); openPreviewModal(dept); };
+    grid.appendChild(card);
+
+    _cardCache[dept] = {
+        card,
+        statusEl:  card.querySelector('.dept-status'),
+        opsEl:     card.querySelector('.roc-ops'),
+        defEl:     card.querySelector('.roc-def'),
+        avgEl:     card.querySelector('.roc-avg'),
+        topCatEl:  card.querySelector('.roc-topcat'),
+        shareEl:   card.querySelector('.roc-share'),
+        lastActEl: card.querySelector('.roc-lastact'),
+        updByEl:   card.querySelector('.roc-updby'),
+        footerEl:  card.querySelector('.roc-footer'),
+    };
+}
+
+function renderOverviewCards(s){
+    const grid = document.getElementById('deptGrid');
+    if(!grid) return;
+    const summary = s || getOverviewSummary();
+
+    const depts = Object.keys(allDepartments);
+
+    /* If cards haven't been created yet (first load or dept list changed) — rebuild */
+    const needInit = depts.some(d => !_cardCache[d] || !grid.contains(_cardCache[d].card));
+    if(needInit){
+        grid.innerHTML = '';
+        Object.keys(_cardCache).forEach(k => delete _cardCache[k]);
+        depts.forEach(dept => _renderOverviewCardsInit(dept, grid, summary));
+        return;
+    }
+
+    /* Fast path — patch only changed text/class nodes */
+    depts.forEach(dept => {
+        const c   = _cardCache[dept];
+        if(!c) return;
+        const { employeeCount, total } = deptStats(dept);
+        const color  = total > 25 ? 'var(--red-mid)' : total > 12 ? '#d97706' : 'var(--green)';
+        const status = deptStatusLevel(total);
+        const topCat = topCategoryInfo(dept);
+        const avg    = employeeCount ? (total / employeeCount).toFixed(1) : '0.0';
+        const share  = summary.combinedDefects > 0 ? Math.round(total / summary.combinedDefects * 100) : 0;
+        const data   = allDepartments[dept] || {};
+        const updatedAt = data.last_updated ? formatAuditTimestamp(data.last_updated) : '—';
+
+        /* Status badge */
+        const newCls = 'dept-status ' + status.cls;
+        if(c.statusEl.className !== newCls) c.statusEl.className = newCls;
+        setTextIfChanged(c.statusEl, status.text);
+
+        /* Metric values */
+        setTextIfChanged(c.opsEl,  String(employeeCount));
+        setTextIfChanged(c.defEl,  String(total));
+        if(c.defEl.style.color !== color) c.defEl.style.color = color;
+        setTextIfChanged(c.avgEl,  avg);
+
+        /* Insights */
+        const topCatText = topCat.label + (topCat.value ? ' (' + topCat.value + ')' : '');
+        setTextIfChanged(c.topCatEl,  topCatText);
+        setTextIfChanged(c.shareEl,   share + '%');
+        setTextIfChanged(c.lastActEl, updatedAt);
+        const updBy = (data.last_updated_by || '').trim() || (data.last_updated ? 'QC station' : '—');
+        setTextIfChanged(c.updByEl, updBy);
+
+        /* Footer (HTML, so compare innerHTML) */
+        const footHtml = formatCardUpdatedBy(dept);
+        if(c.footerEl.innerHTML !== footHtml) c.footerEl.innerHTML = footHtml;
+    });
+}
+
+function renderOverview(){
+    const shiftEl = document.getElementById('overviewShift');
+    if(shiftEl) shiftEl.textContent = getShiftLabel();
+    const s = getOverviewSummary();
+    renderOverviewKpis(s);
+    renderDeptCompare(s);
+    renderOverviewCards(s);
+    renderRecentActivity();
+    if(chartLog.entries.length) renderActivityChart();
+}
+
+async function renderOverviewFull(){
+    await refreshAuditLogCache(true);
+    renderOverview();
+}
+
+function showOverview(){
+    currentView = 'overview';
+    /* PERF: Reset fingerprint so the first live tick re-renders fully,
+       picking up any changes that happened while on the detail view. */
+    _lastDataFingerprint = '';
+    document.getElementById('view-overview').classList.add('active');
+    document.getElementById('view-detail').classList.remove('active');
+    document.getElementById('view-reports').classList.remove('active');
+    setActiveTab();
+    renderOverviewFull();
+}
+
+/* ===== ROUTING ===== */
+
+function route(){
+    const hash = location.hash || '#/';
+    if(hash === '#/reports'){
+        showReports();
+        return;
+    }
+    const match = hash.match(/^#\/dept\/(.+)$/);
+    if(match){
+        const dept = decodeURIComponent(match[1]);
+        if(allDepartments[dept]){ showDetail(dept); return; }
+    }
+    showOverview();
+}
+
+window.addEventListener('hashchange', route);
+
+function renderNavTabs(){
+    const nav = document.getElementById('navTabs');
+    nav.innerHTML = '';
+
+    const overviewTab = document.createElement('button');
+    overviewTab.className = 'nav-tab';
+    overviewTab.dataset.route = '#/';
+    overviewTab.innerText = 'Overview';
+    overviewTab.onclick = () => location.hash = '#/';
+    nav.appendChild(overviewTab);
+
+    // Reports tab
+    const reportsTab = document.createElement('button');
+    reportsTab.className = 'nav-tab';
+    reportsTab.dataset.route = '#/reports';
+    reportsTab.innerText = 'Review Reports';
+    reportsTab.onclick = () => location.hash = '#/reports';
+    nav.appendChild(reportsTab);
+
+    Object.keys(allDepartments).forEach(dept => {
+        const tab = document.createElement('button');
+        tab.className = 'nav-tab';
+        tab.dataset.route = '#/dept/' + encodeURIComponent(dept);
+        tab.innerText = dept;
+        tab.onclick = () => location.hash = '#/dept/' + encodeURIComponent(dept);
+        nav.appendChild(tab);
+    });
+}
+
+function setActiveTab(){
+    const hash = location.hash || '#/';
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.route === hash);
+    });
+}
+
+/* ===== DEPT COLUMN ORDER & COLORS ===== */
+
+const DEPT_CATEGORY_ORDER = {
+    CUTTING: ['WRONG_COLOR','WRONG_SIZE','WRONG_CUT','OFF_SHADE','LOW_QUALITY','WRONG_MATERIAL','OTHERS'],
+    EMBRO:   ['LOW_QUALITY','WRONG_COLOR_THREAD','WRONG_PLACEMENT','WRONG_TEXT_FONT','UNBALANCED','WRONG_SPELLING','OTHERS']
+};
+
+// Header background colors matching the printed sheets
+const DEPT_HEADER_COLORS = {
+    CUTTING: {
+        WRONG_COLOR:    { bg:'#f5c700', color:'#0f172a' },
+        WRONG_SIZE:     { bg:'#c084fc', color:'#0f172a' },
+        WRONG_CUT:      { bg:'#22c55e', color:'#0f172a' },
+        OFF_SHADE:      { bg:'#38bdf8', color:'#0f172a' },
+        LOW_QUALITY:    { bg:'#fb923c', color:'#0f172a' },
+        WRONG_MATERIAL: { bg:'#ef4444', color:'#0f172a' },
+        OTHERS:         { bg:'#2dd4bf', color:'#0f172a' },
+    },
+    EMBRO: {
+        LOW_QUALITY:        { bg:'#f5c700', color:'#0f172a' },
+        WRONG_COLOR_THREAD: { bg:'#c084fc', color:'#0f172a' },
+        WRONG_PLACEMENT:    { bg:'#22c55e', color:'#0f172a' },
+        WRONG_TEXT_FONT:    { bg:'#38bdf8', color:'#0f172a' },
+        UNBALANCED:         { bg:'#fb923c', color:'#0f172a' },
+        WRONG_SPELLING:     { bg:'#ef4444', color:'#0f172a' },
+        OTHERS:             { bg:'#2dd4bf', color:'#0f172a' },
+    }
+};
+
+function getDeptCategories(dept, employees){
+    const order = DEPT_CATEGORY_ORDER[dept];
+    if(order) return order;
+    // fallback: order from data, OTHERS last
+    const raw = employees && employees.length > 0 ? Object.keys(employees[0].defects) : [];
+    const others = raw.filter(c => c === 'OTHERS');
+    return [...raw.filter(c => c !== 'OTHERS'), ...others];
+}
+
+function getHeaderStyle(dept, cat){
+    const map = DEPT_HEADER_COLORS[dept];
+    if(map && map[cat]) return map[cat];
+    return { bg:'var(--surface-2)', color:'#1e293b' };
+}
+
+/* ===== DETAIL ===== */
+
+function showDetail(dept){
+    currentView = 'detail';
+    currentDepartment = dept;
+    /* PERF: Reset the data fingerprint so the first live refresh always
+       renders the freshly-fetched data for this dept. */
+    _lastDataFingerprint = '';
+    document.getElementById('view-overview').classList.remove('active');
+    document.getElementById('view-detail').classList.add('active');
+    document.getElementById('view-reports').classList.remove('active');
+    setActiveTab();
+    document.getElementById('detailCode').innerText = DEPT_CODES[dept];
+    document.getElementById('detailTableTitle').innerText = 'Inspection log — ' + dept;
+    document.getElementById('detailUpdateBtn').onclick = () => openEditConsole(dept);
+    document.getElementById('detailExportBtn').onclick = () => exportDepartment(dept);
+    document.getElementById('detailResetBtn').onclick  = () => resetDepartment(dept);
+    document.getElementById('detailPreviewBtn').onclick = () => openPreviewModal(dept);
+    renderDetailStats(dept);
+    renderDetailTable(dept);
+}
+
+function renderDetailStats(dept){
+    const { employeeCount, total } = deptStats(dept);
+    document.getElementById('detailEmpCount').innerText = employeeCount;
+    document.getElementById('detailDefectCount').innerText = total;
+    document.getElementById('detailLiveTotal').innerText = total;
+    document.getElementById('detailTopCat').innerText = topCategory(dept);
+}
+
+/* PERF: renderDetailTable previously rebuilt the entire table (thead + tbody + tfoot)
+   with a large innerHTML string every second.  For a table with 20 employees × 7
+   categories that's 140 data cells + 20 row-total cells + 8 footer cells = 168
+   DOM mutations per tick, plus a full layout reflow.
+
+   New approach:
+   - _renderDetailTableInit() builds the table once and tags every cell with a
+     data attribute so we can address it by [row][col] in O(1).
+   - renderDetailTable() recomputes only the numbers that changed and patches
+     those cells directly.  Unchanged cells are never touched.
+   - The high-threshold cell-class (cell-high / cell-zero) is also diffed so
+     class names are only written when they actually change. */
+
+const _detailTableCache = {};   // dept → { table, cells[][], footCells[], totCells[] }
+
+function _renderDetailTableInit(dept, data, container){
+    const categories = getDeptCategories(dept, data.employees);
+    let maxVal = 1;
+    data.employees.forEach(emp => {
+        categories.forEach(cat => { if((emp.defects[cat]||0) > maxVal) maxVal = emp.defects[cat]||0; });
+    });
+    const highThreshold = Math.max(2, Math.ceil(maxVal * 0.55));
+
+    /* Build via document fragment to minimise reflow */
+    const frag = document.createDocumentFragment();
+    const table = document.createElement('table');
+    table.className = 'data-table';
+
+    /* thead — style goes directly on th, no inner wrapper span */
+    const thead = document.createElement('thead');
+    const hRow  = document.createElement('tr');
+
+    let th = document.createElement('th');
+    th.className = 'col-employee';
+    th.textContent = 'Employee';
+    hRow.appendChild(th);
+
+    categories.forEach(cat => {
+        const hs = getHeaderStyle(dept, cat);
+        th = document.createElement('th');
+        th.className = 'cat-header';
+        th.textContent = cat.replace(/_/g,' ');
+        /* Apply colour directly on th — no inner span that misaligns with sticky */
+        th.style.background = hs.bg;
+        th.style.color = hs.color;
+        hRow.appendChild(th);
+    });
+
+    th = document.createElement('th');
+    th.className = 'col-total';
+    th.textContent = 'Total';
+    hRow.appendChild(th);
+    thead.appendChild(hRow);
+    table.appendChild(thead);
+
+    /* tbody — cache cell references */
+    const tbody    = document.createElement('tbody');
+    const cellRefs = [];   // [rowIdx][colIdx] → td element
+    const totRefs  = [];   // [rowIdx] → total td
+
+    data.employees.forEach((emp, rowIdx) => {
+        const tr = document.createElement('tr');
+        tr.className = rowIdx % 2 === 0 ? 'row-odd' : 'row-even';
+
+        const nameTd = document.createElement('td');
+        nameTd.className = 'col-employee';
+        nameTd.textContent = emp.name;
+        tr.appendChild(nameTd);
+
+        cellRefs[rowIdx] = [];
+        let rowTotal = 0;
+        categories.forEach(cat => {
+            const v  = getDefectVal(emp.defects, cat);
+            rowTotal += v;
+            /* cell-count removed — default td style handles normal values */
+            let cls = '';
+            if(v === 0) cls = 'cell-zero';
+            else if(v >= highThreshold) cls = 'cell-high';
+            const td = document.createElement('td');
+            if(cls) td.className = cls;
+            td.textContent = String(v);
+            tr.appendChild(td);
+            cellRefs[rowIdx].push(td);
+        });
+
+        const totTd = document.createElement('td');
+        totTd.className = 'col-total';
+        totTd.textContent = String(rowTotal);
+        tr.appendChild(totTd);
+        totRefs[rowIdx] = totTd;
+
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    /* tfoot */
+    const tfoot   = document.createElement('tfoot');
+    const fRow    = document.createElement('tr');
+    const footRefs = [];
+
+    let ftd = document.createElement('td');
+    ftd.textContent = 'TOTAL';
+    fRow.appendChild(ftd);
+
+    let grandTotal = 0;
+    categories.forEach(cat => {
+        const sum = data.employees.reduce((acc, emp) => acc + getDefectVal(emp.defects, cat), 0);
+        grandTotal += sum;
+        const td  = document.createElement('td');
+        td.textContent = String(sum);
+        fRow.appendChild(td);
+        footRefs.push(td);
+    });
+
+    const grandTd = document.createElement('td');
+    grandTd.className = 'col-foot-total';
+    grandTd.textContent = String(grandTotal);
+    fRow.appendChild(grandTd);
+    tfoot.appendChild(fRow);
+    table.appendChild(tfoot);
+
+    frag.appendChild(table);
+    container.innerHTML = '';
+    container.appendChild(frag);
+
+    _detailTableCache[dept] = { table, cellRefs, totRefs, footRefs, grandTd, categories, highThreshold };
+}
+
+function renderDetailTable(dept){
+    const data      = allDepartments[dept];
+    const container = document.getElementById('detailTableContainer');
+
+    if(!data.employees || data.employees.length === 0){
+        container.innerHTML = '<div class="empty-state">No entries logged yet.</div>';
+        delete _detailTableCache[dept];
+        return;
+    }
+
+    const categories = getDeptCategories(dept, data.employees);
+
+    /* Check if structural change requires a full rebuild */
+    const cached = _detailTableCache[dept];
+    const structureMatch = cached &&
+        cached.categories.join() === categories.join() &&
+        cached.cellRefs.length === data.employees.length &&
+        container.contains(cached.table);
+
+    if(!structureMatch){
+        _renderDetailTableInit(dept, data, container);
+        return;
+    }
+
+    /* Fast path — only update cells whose value changed */
+    let maxVal = 1;
+    data.employees.forEach(emp => {
+        categories.forEach(cat => { if((emp.defects[cat]||0) > maxVal) maxVal = emp.defects[cat]||0; });
+    });
+    const highThreshold = Math.max(2, Math.ceil(maxVal * 0.55));
+
+    let grandTotal = 0;
+    const catSums  = new Array(categories.length).fill(0);
+
+    data.employees.forEach((emp, rowIdx) => {
+        let rowTotal = 0;
+        categories.forEach((cat, colIdx) => {
+            const v    = getDefectVal(emp.defects, cat);
+            rowTotal  += v;
+            catSums[colIdx] += v;
+
+            const td   = cached.cellRefs[rowIdx][colIdx];
+            const vStr = String(v);
+            if(td.textContent !== vStr) td.textContent = vStr;
+
+            /* Update class only when it changes */
+            let cls = '';
+            if(v === 0) cls = 'cell-zero';
+            else if(v >= highThreshold) cls = 'cell-high';
+            if(td.className !== cls) td.className = cls;
+        });
+
+        const totTd = cached.totRefs[rowIdx];
+        const rtStr = String(rowTotal);
+        if(totTd.textContent !== rtStr) totTd.textContent = rtStr;
+        grandTotal += rowTotal;
+    });
+
+    catSums.forEach((sum, colIdx) => {
+        const td  = cached.footRefs[colIdx];
+        const str = String(sum);
+        if(td.textContent !== str) td.textContent = str;
+    });
+
+    const gtStr = String(grandTotal);
+    if(cached.grandTd.textContent !== gtStr) cached.grandTd.textContent = gtStr;
+}
+
+/* ===== EDIT CONSOLE ===== */
+
+function openEditConsole(dept){
+    currentConsoleDept = dept;
+    deletedConsoleRows = new Set();
+    const employees = allDepartments[dept].employees || [];
+    document.getElementById('consoleDeptName').innerText = 'Edit console — ' + dept;
+    const body = document.getElementById('consoleBody');
+
+    if(employees.length === 0){
+        body.innerHTML = '<div class="empty-state">No entries yet. Add an employee below.</div>';
+    } else {
+        const categories = getDeptCategories(dept, employees);
+        let html = '<table class="console-table"><thead><tr><th>Employee</th>';
+        categories.forEach(cat => {
+            const hs = getHeaderStyle(dept, cat);
+            html += '<th style="background:' + hs.bg + ';color:' + hs.color + ';">' + formatCatLabel(cat) + '</th>';
+        });
+        html += '<th>Total</th><th></th></tr></thead><tbody>';
+
+        employees.forEach((emp, i) => {
+            const total = Object.values(emp.defects).reduce((a,b) => a + (parseInt(b)||0), 0);
+            html += '<tr data-emp-row="' + i + '">';
+            html += '<td><div class="console-name-box"><input type="text" class="console-input" data-row="' + i + '" data-field="name" value="' + emp.name + '"></div></td>';
+            categories.forEach(cat => {
+                const v = getDefectVal(emp.defects, cat);
+                html += '<td><div class="stepper-group">' +
+                    '<button type="button" class="step-btn" onclick="stepValue(this,-1)">&minus;</button>' +
+                    '<input type="number" min="0" class="console-input console-num" data-row="' + i + '" data-field="' + cat + '" value="' + v + '" oninput="recalcRowTotal(this)">' +
+                    '<button type="button" class="step-btn" onclick="stepValue(this,1)">+</button>' +
+                '</div></td>';
+            });
+            html += '<td class="console-total-cell">' + total + '</td>';
+            html += '<td><button type="button" class="console-del-btn" onclick="deleteConsoleRow(this)" title="Remove employee">&times;</button></td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+    }
+
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function stepValue(btn, delta){
+    const group = btn.closest('.stepper-group');
+    const input = group.querySelector('input.console-num');
+    let v = parseInt(input.value) || 0;
+    v = Math.max(0, v + delta);
+    input.value = v;
+    recalcRowTotal(input);
+}
+
+function recalcRowTotal(inputEl){
+    const tr = inputEl.closest('tr');
+    if(!tr) return;
+    let sum = 0;
+    tr.querySelectorAll('.console-num').forEach(inp => sum += (parseInt(inp.value) || 0));
+    const totalCell = tr.querySelector('.console-total-cell');
+    if(totalCell) totalCell.innerText = sum;
+}
+
+function deleteConsoleRow(btn){
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    if(tr.dataset.empRow !== undefined && tr.dataset.empRow !== ''){
+        deletedConsoleRows.add(parseInt(tr.dataset.empRow));
+    }
+    tr.remove();
+}
+
+function closeModal(){
+    document.getElementById('editModal').style.display = 'none';
+}
+
+function addEmployeeRow(){
+    const dept = currentConsoleDept;
+    const employees = allDepartments[dept].employees || [];
+    if(employees.length === 0){ openEditConsole(dept); return; }
+
+    const categories = getDeptCategories(dept, employees);
+    const table = document.querySelector('#consoleBody .console-table');
+    if(!table){ openEditConsole(dept); return; }
+
+    const tbody = table.querySelector('tbody') || table;
+    const existingRows = tbody.querySelectorAll('tr').length;
+
+    const tr = document.createElement('tr');
+    tr.className = 'new-emp-row';
+    let rowHtml = '<td><div class="console-name-box"><input type="text" class="console-input new-emp-input" data-newrow="' + existingRows + '" data-field="name" placeholder="Employee name"></div></td>';
+    categories.forEach(cat => {
+        rowHtml += '<td><div class="stepper-group">' +
+            '<button type="button" class="step-btn" onclick="stepValue(this,-1)">&minus;</button>' +
+            '<input type="number" min="0" class="console-input console-num new-emp-input" data-newrow="' + existingRows + '" data-field="' + cat + '" value="0" oninput="recalcRowTotal(this)">' +
+            '<button type="button" class="step-btn" onclick="stepValue(this,1)">+</button>' +
+        '</div></td>';
+    });
+    rowHtml += '<td class="console-total-cell">0</td>';
+    rowHtml += '<td><button type="button" class="console-del-btn" onclick="deleteConsoleRow(this)" title="Remove row">&times;</button></td>';
+    tr.innerHTML = rowHtml;
+
+    tbody.appendChild(tr);
+    tr.querySelector('input[data-field="name"]').focus();
+}
+
+async function saveConsole(){
+    const dept = currentConsoleDept;
+    const employees = allDepartments[dept].employees || [];
+    const categories = getDeptCategories(dept, employees);
+
+    // Build the updated employee list entirely from the current DOM state.
+    // Previously we started from allDepartments[dept].employees and patched
+    // it — but if the tray app or another session updated the file between
+    // when the modal opened and when Save was clicked, those values would
+    // overwrite the in-DOM edits.  Reading straight from the DOM is correct
+    // because the modal shows every cell for every employee.
+
+    // --- existing (non-new) rows ---
+    const kept = [];
+    const rows = document.querySelectorAll('#consoleBody .console-table tbody tr[data-emp-row]');
+    rows.forEach(tr => {
+        const rowIdx = parseInt(tr.dataset.empRow);
+        if(deletedConsoleRows.has(rowIdx)) return;
+        const nameInput = tr.querySelector('.console-input[data-field="name"]');
+        const name = (nameInput ? nameInput.value.trim() : '') || (employees[rowIdx] ? employees[rowIdx].name : '');
+        const defects = {};
+        categories.forEach(cat => {
+            const inp = tr.querySelector('.console-input[data-field="' + cat + '"]');
+            defects[cat] = inp ? (parseInt(inp.value) || 0) : getDefectVal((employees[rowIdx] || {}).defects, cat);
+        });
+        kept.push({ name, defects });
+    });
+
+    // --- new rows ---
+    const newRowMap = {};
+    document.querySelectorAll('#consoleBody .new-emp-input').forEach(input => {
+        const idx = input.dataset.newrow;
+        if(!newRowMap[idx]) newRowMap[idx] = { name:'', defects:{} };
+        const field = input.dataset.field;
+        if(field === 'name'){
+            newRowMap[idx].name = input.value.trim();
+        } else {
+            newRowMap[idx].defects[field] = parseInt(input.value) || 0;
+        }
+    });
+
+    Object.values(newRowMap).forEach(row => {
+        if(row.name){
+            categories.forEach(cat => { if(!(cat in row.defects)) row.defects[cat] = 0; });
+            kept.push(row);
+        }
+    });
+
+    try {
+        await pushUpdate(dept, kept);
+        allDepartments = await fetchDepartments();
+        closeModal();
+        if(currentView === 'overview') renderOverviewFull();
+        if(currentView === 'detail' && currentDepartment === dept){
+            renderDetailStats(dept);
+            renderDetailTable(dept);
+        }
+        fetchChartLog();
+        showToast('Changes saved.', 'success');
+    } catch(e) {
+        showToast("Couldn't save — " + e.message, 'error');
+    }
+}
+
+/* ===== TOAST ===== */
+
+function showToast(message, type){
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + (type === 'error' ? 'error' : 'success');
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2800);
+}
+
+/* ===== MODAL DISMISS ===== */
+
+window.addEventListener('click', e => {
+    const modal = document.getElementById('editModal');
+    if(e.target === modal) closeModal();
+    const logsModal = document.getElementById('logsModal');
+    if(e.target === logsModal) closeLogsModal();
+});
+window.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+        closeModal();
+        closeLogsModal();
+    }
+});
+
+/* ===== ACTIVITY LOGS ===== */
+
+function formatLogChanges(entry){
+    if(entry.action === 'reset'){
+        const prev = (entry.changes && entry.changes[0] && entry.changes[0].previous_total);
+        if(typeof prev === 'number' && prev > 0) return 'Reset all counters from ' + prev + ' to 0';
+        return 'Reset all counters to 0';
+    }
+
+    const parts = [];
+    (entry.changes || []).forEach(item => {
+        if(item.type === 'employee_added'){
+            parts.push('Added employee: ' + item.employee);
+        } else if(item.type === 'employee_removed'){
+            parts.push('Removed employee: ' + item.employee);
+        } else if(item.type === 'employee_renamed'){
+            parts.push('Renamed ' + item.from + ' → ' + item.to);
+        } else if(item.type === 'defects_updated'){
+            Object.keys(item.changes || {}).forEach(key => {
+                const ch = item.changes[key];
+                const label = key.replace(/_/g, ' ');
+                parts.push(item.employee + ' · ' + label + ': ' + ch.from + ' → ' + ch.to);
+            });
+        }
+    });
+
+    return parts.length ? parts.join('<br>') : (entry.summary || 'Changes saved');
+}
+
+async function fetchAuditLog(){
+    const res = await fetch('/api/audit-log');
+    if(!res.ok) throw new Error('Could not load logs');
+    return res.json();
+}
+
+async function openLogsModal(){
+    closeUserMenu();
+    const modal = document.getElementById('logsModal');
+    const body  = document.getElementById('logsBody');
+    modal.style.display = 'flex';
+    body.innerHTML = '<div class="logs-empty">Loading logs…</div>';
+
+    try {
+        const data = await fetchAuditLog();
+        const entries = data.entries || [];
+        if(!entries.length){
+            body.innerHTML = '<div class="logs-empty">No activity logged yet. Saves from the monitor will appear here.</div>';
+            return;
+        }
+
+        let html = '<table class="logs-table"><thead><tr>' +
+            '<th>When</th><th>User</th><th>Dept</th><th>Action</th><th>What changed</th>' +
+            '</tr></thead><tbody>';
+
+        entries.forEach(entry => {
+            html += '<tr>' +
+                '<td class="logs-time">' + formatAuditTimestamp(entry.timestamp) + '</td>' +
+                '<td class="logs-user">' + (entry.user || '—') + '</td>' +
+                '<td><span class="logs-dept">' + (entry.department || '—') + '</span></td>' +
+                '<td class="logs-action">' + (entry.action || 'update') + '</td>' +
+                '<td class="logs-detail">' + formatLogChanges(entry) + '</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+    } catch(e){
+        body.innerHTML = '<div class="logs-empty">Could not load logs — ' + e.message + '</div>';
+    }
+}
+
+function closeLogsModal(){
+    const modal = document.getElementById('logsModal');
+    if(modal) modal.style.display = 'none';
+}
+
+/* ===== ACTIVITY CHART ===== */
+
+const DEPT_COLORS = {
+    CUTTING: { line: '#2563eb', fillTop: 'rgba(37,99,235,0.22)', fillBot: 'rgba(37,99,235,0.02)', glow: 'rgba(37,99,235,0.35)' },
+    EMBRO:   { line: '#e11d48', fillTop: 'rgba(225,29,72,0.20)', fillBot: 'rgba(225,29,72,0.02)', glow: 'rgba(225,29,72,0.30)' }
+};
+const DEPT_ORDER = ['CUTTING', 'EMBRO'];
+
+let chartLog = { entries: [] };
+
+async function fetchChartLog(){
+    if(!isLoggedIn) return;
+    try {
+        const res = await fetch('/api/chart-log');
+        if(!res.ok) return;
+        chartLog = await res.json();
+        renderActivityChart();
+        if(currentView === 'overview') renderOverviewKpis();
+    } catch(e){ /* server not ready */ }
+}
+
+function renderActivityChart(){
+    const entries = (chartLog.entries || []);
+    const canvas  = document.getElementById('activityChart');
+    const empty   = document.getElementById('chartEmpty');
+
+    if(entries.length === 0){
+        canvas.style.display = 'none';
+        empty.style.display  = 'flex';
+        return;
+    }
+    canvas.style.display = 'block';
+    empty.style.display  = 'none';
+
+    const wrap = document.getElementById('chartWrap');
+    const W    = wrap.clientWidth  || 800;
+    const H    = wrap.clientHeight || 172;
+
+    canvas.width  = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+
+    const PAD_L = 52, PAD_R = 24, PAD_T = 18, PAD_B = 36;
+    const plotW = W - PAD_L - PAD_R;
+    const plotH = H - PAD_T - PAD_B;
+
+    // X axis: always full day 6AM → 6AM next day (30 hours displayed as 6–30)
+    const now = new Date();
+    const nowFrac = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
+    // If past midnight but before 6am, offset by 24 so it stays on the right side
+    const nowPlot = nowFrac < 6 ? nowFrac + 24 : nowFrac;
+    const xStart  = 6;
+    const xEnd    = 30; // 6AM next day = hour 30
+
+    // Build each dept's series as real (time, cumulative-total) points — no
+    // flat "step" padding, so consecutive records connect on a diagonal.
+    // Because hf (hour_fraction) maps straight onto X, two records logged
+    // close together in time land close together on X too, so the segment
+    // between them is short and steep; records spaced further apart in
+    // time produce a longer, shallower segment. The arrow's angle is a
+    // direct readout of how close together in time those two saves were.
+    const series = {};
+    DEPT_ORDER.forEach(d => { series[d] = [{ hf: xStart, total: 0 }]; });
+
+    entries.forEach(e => {
+        const dept = e.department;
+        if(!series[dept]) return;
+        // hour_fraction from server; if < 6 it's after midnight, offset to 24+
+        const hf = e.hour_fraction < 6 ? e.hour_fraction + 24 : e.hour_fraction;
+        series[dept].push({ hf, total: e.total });
+    });
+
+    // Extend each series to NOW using live totals so the chart always
+    // matches the overview cards (log can be stale if counts changed
+    // outside the admin save/reset flow, e.g. tray app sync).
+    DEPT_ORDER.forEach(d => {
+        const arr       = series[d];
+        const last      = arr[arr.length - 1];
+        const cap       = Math.min(nowPlot, xEnd);
+        const liveTotal = deptStats(d).total;
+
+        if(last.hf >= cap - 0.001){
+            last.hf    = cap;
+            last.total = liveTotal;
+        } else {
+            arr.push({ hf: cap, total: liveTotal });
+        }
+    });
+
+    // Y max
+    let yMax = 10;
+    DEPT_ORDER.forEach(d => {
+        series[d].forEach(p => { if(p.total > yMax) yMax = p.total; });
+    });
+    yMax = Math.ceil(yMax * 1.15 / 5) * 5;
+
+    // Helpers
+    const toX = hf  => PAD_L + ((hf  - xStart) / (xEnd - xStart)) * plotW;
+    const toY = val => PAD_T + plotH - (val / yMax) * plotH;
+
+    // Soft plot background
+    const plotGrad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+    plotGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+    plotGrad.addColorStop(1, 'rgba(241,245,249,0.35)');
+    ctx.fillStyle = plotGrad;
+    ctx.fillRect(PAD_L, PAD_T, plotW, plotH);
+
+    // Horizontal grid + Y labels
+    const ySteps = 4;
+    ctx.textAlign = 'right';
+    ctx.font = '500 10px IBM Plex Mono, monospace';
+    for(let i = 0; i <= ySteps; i++){
+        const val = Math.round(yMax * i / ySteps);
+        const y   = toY(val);
+        ctx.strokeStyle = i === 0 ? 'rgba(100,116,139,0.28)' : 'rgba(148,163,184,0.16)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(PAD_L, y);
+        ctx.lineTo(PAD_L + plotW, y);
+        ctx.stroke();
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(val, PAD_L - 8, y + 3.5);
+    }
+
+    // Vertical grid + X labels (every 2 hours)
+    ctx.textAlign = 'center';
+    ctx.font = '500 10px IBM Plex Mono, monospace';
+    for(let h = xStart; h <= xEnd; h += 2){
+        const x = toX(h);
+        ctx.strokeStyle = 'rgba(148,163,184,0.14)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, PAD_T);
+        ctx.lineTo(x, PAD_T + plotH);
+        ctx.stroke();
+        const realH = h % 24;
+        const label = (realH % 12 || 12) + (realH < 12 ? 'am' : 'pm');
+        ctx.fillStyle = h % 4 === 0 ? '#475569' : '#94a3b8';
+        ctx.fillText(label, x, PAD_T + plotH + 18);
+    }
+
+    // NOW line + label
+    const nowX = toX(nowPlot);
+    ctx.strokeStyle = 'rgba(30,64,175,0.35)';
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(nowX, PAD_T);
+    ctx.lineTo(nowX, PAD_T + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const nowLabel = 'NOW';
+    ctx.font = '600 9px Inter, sans-serif';
+    const labelW = ctx.measureText(nowLabel).width + 10;
+    ctx.fillStyle = 'rgba(30,64,175,0.88)';
+    ctx.fillRect(nowX - labelW / 2, PAD_T - 2, labelW, 16);
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(nowLabel, nowX, PAD_T + 9);
+
+    // Draw each dept line
+    DEPT_ORDER.forEach(dept => {
+        const pts    = series[dept];
+        const colors = DEPT_COLORS[dept] || { line:'#888', fillTop:'rgba(136,136,136,0.15)', fillBot:'rgba(136,136,136,0.02)', glow:'rgba(136,136,136,0.2)' };
+
+        if(pts.length < 2) return;
+
+        // Gradient fill under line
+        const fillGrad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+        fillGrad.addColorStop(0, colors.fillTop);
+        fillGrad.addColorStop(1, colors.fillBot);
+        ctx.beginPath();
+        ctx.moveTo(toX(pts[0].hf), toY(0));
+        pts.forEach(p => ctx.lineTo(toX(p.hf), toY(p.total)));
+        ctx.lineTo(toX(pts[pts.length-1].hf), toY(0));
+        ctx.closePath();
+        ctx.fillStyle = fillGrad;
+        ctx.fill();
+
+        // Soft glow stroke
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            const x = toX(p.hf), y = toY(p.total);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colors.glow;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.35;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Main line
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            const x = toX(p.hf), y = toY(p.total);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colors.line;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Endpoint dot with ring
+        const last = pts[pts.length - 1];
+        const lx = toX(last.hf), ly = toY(last.total);
+        ctx.beginPath();
+        ctx.arc(lx, ly, 7, 0, Math.PI * 2);
+        ctx.fillStyle = colors.glow;
+        ctx.globalAlpha = 0.45;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = colors.line;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    });
+
+    // Axes border
+    ctx.strokeStyle = 'rgba(71,85,105,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, PAD_T);
+    ctx.lineTo(PAD_L, PAD_T + plotH);
+    ctx.lineTo(PAD_L + plotW, PAD_T + plotH);
+    ctx.stroke();
+}
+
+/* ===== LIVE REFRESH (every 1s) ===== */
+
+/* PERF: Data fingerprint — if the server returns the same numbers as last
+   cycle, skip all DOM work entirely.  This prevents unnecessary repaints
+   during quiet periods when no defects are being updated. */
+let _lastDataFingerprint = '';
+
+function _buildFingerprint(data){
+    /* Cheap JSON key-values only — not a full stringify of nested objects */
+    return Object.keys(data).map(dept => {
+        const emps = (data[dept].employees || []);
+        return dept + ':' + emps.map(e => Object.values(e.defects).join(',')).join(';');
+    }).join('|');
+}
+
+/* PERF: Rendering is batched into a single rAF tick so that if the fetch
+   resolves mid-frame, the DOM writes happen at the start of the next paint
+   cycle, not in an arbitrary position that could cause double-paint. */
+let _rafPending = false;
+let _pendingRenderView = null;
+let _pendingRenderDept = null;
+
+function _flushRender(){
+    _rafPending = false;
+    if(_pendingRenderView === 'overview'){
+        renderOverview();
+    } else if(_pendingRenderView === 'detail' && _pendingRenderDept){
+        renderDetailStats(_pendingRenderDept);
+        renderDetailTable(_pendingRenderDept);
+    }
+    _pendingRenderView = null;
+    _pendingRenderDept = null;
+}
+
+async function liveRefreshDepartments(){
+    /* Skip while the edit console modal is open — don't overwrite active edits. */
+    if(document.getElementById('editModal').style.display === 'flex') return;
+
+    try {
+        const freshData = await fetchDepartments();
+
+        /* Data-change guard: if nothing changed, do zero DOM work */
+        const fp = _buildFingerprint(freshData);
+        if(fp === _lastDataFingerprint){
+            /* Still update the clock and live total label cheaply */
+            if(currentView === 'detail' && currentDepartment){
+                const liveEl = document.getElementById('detailLiveTotal');
+                if(liveEl){
+                    const { total } = deptStats(currentDepartment);
+                    setTextIfChanged(liveEl, String(total));
+                }
+            }
+            return;
+        }
+        _lastDataFingerprint = fp;
+        allDepartments = freshData;
+
+        /* Audit log (overview only, rate-limited internally) */
+        if(currentView === 'overview') await refreshAuditLogCache(false);
+
+        /* Schedule DOM work on the next animation frame */
+        _pendingRenderView = currentView;
+        _pendingRenderDept = currentDepartment;
+        if(!_rafPending){
+            _rafPending = true;
+            requestAnimationFrame(_flushRender);
+        }
+
+        document.getElementById('errorBanner').style.display = 'none';
+    } catch(e) {
+        /* Transient network hiccup — ignore quietly. */
+    }
+}
+
+function startPolling(){
+    if(_refreshInterval) return;
+    updateClock();
+    _clockInterval   = setInterval(updateClock, 1000);
+    _refreshInterval = setInterval(liveRefreshDepartments, 1000);
+    _chartInterval   = setInterval(fetchChartLog, 5000);
+
+    _resizeHandler = debounce(() => {
+        if(chartLog.entries.length) renderActivityChart();
+        if(currentView === 'reports' && RR.redraw) RR.redraw();
+    }, 120);
+    window.addEventListener('resize', _resizeHandler);
+}
+
+function stopPolling(){
+    clearInterval(_clockInterval);   _clockInterval   = null;
+    clearInterval(_refreshInterval); _refreshInterval = null;
+    clearInterval(_chartInterval);   _chartInterval   = null;
+    if(_resizeHandler){
+        window.removeEventListener('resize', _resizeHandler);
+        _resizeHandler = null;
+    }
+}
+
+/* ===== PREVIEW MODAL ===== */
+
+const DEPT_PREVIEW_URLS = {
+    CUTTING: 'http://192.168.1.59:4545',
+    EMBRO:   'http://192.168.1.59:4646'
+};
+
+(function initPreviewModal(){
+    const modal       = document.getElementById('previewModal');
+    const closeBtn    = document.getElementById('previewCloseBtn');
+    const titleEl     = document.getElementById('previewModalTitle');
+    const iframeWrap  = modal.querySelector('.pm-iframe-wrap');
+
+    let _scrollY = 0;
+
+    function openPreviewModal(dept){
+        const url = DEPT_PREVIEW_URLS[dept] || DEPT_PREVIEW_URLS[Object.keys(DEPT_PREVIEW_URLS)[0]];
+
+        /* Inject iframe fresh on each open */
+        const iframe = document.createElement('iframe');
+        iframe.id  = 'previewFrame';
+        iframe.src = url;
+        iframe.setAttribute('allowfullscreen', '');
+        iframeWrap.appendChild(iframe);
+
+        /* Update title */
+        titleEl.textContent = 'LIVE PREVIEW — ' + dept + ' (' + url + ')';
+
+        /* Prevent background scroll */
+        _scrollY = window.scrollY;
+        document.body.style.overflow = 'hidden';
+
+        /* Show */
+        modal.classList.add('pm-open');
+        modal.focus();
+    }
+
+    function closePreviewModal(){
+        modal.classList.remove('pm-open');
+
+        /* Wait for fade-out then destroy iframe */
+        setTimeout(() => {
+            const frame = iframeWrap.querySelector('iframe');
+            if(frame){
+                frame.src = 'about:blank';
+                frame.remove();
+            }
+        }, 240);
+
+        /* Restore scroll */
+        document.body.style.overflow = '';
+        window.scrollTo(0, _scrollY);
+    }
+
+    /* Close button */
+    closeBtn.addEventListener('click', closePreviewModal);
+
+    /* Click outside .pm-box closes modal */
+    modal.addEventListener('click', function(e){
+        if(e.target === modal) closePreviewModal();
+    });
+
+    /* ESC key closes modal */
+    document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape' && modal.classList.contains('pm-open')) closePreviewModal();
+    });
+
+    /* Expose globally */
+    window.openPreviewModal = openPreviewModal;
+    window.closePreviewModal = closePreviewModal;
+})();
+
+/* ===== REVIEW REPORTS ===== */
+
+// ── State ────────────────────────────────────────────────────────────────────
+const RR = {
+    availableDates: new Set(),   // "YYYY-MM-DD" strings with archived reports
+    calYear:  new Date().getFullYear(),
+    calMonth: new Date().getMonth(),   // 0-indexed
+    selectedDate: null,
+    mode: null,     // 'daily' | 'weekly' | 'monthly' | 'annual'
+    redraw: null,   // re-runs the currently visible report chart's draw fn (used on window resize)
+};
+
+const DEPT_COLORS_RR = {
+    CUTTING: '#2563eb',
+    EMBRO:   '#e11d48',
+};
+
+// ── Entry point ──────────────────────────────────────────────────────────────
+
+function showReports(){
+    currentView = 'reports';
+    document.getElementById('view-overview').classList.remove('active');
+    document.getElementById('view-detail').classList.remove('active');
+    document.getElementById('view-reports').classList.add('active');
+    setActiveTab();
+
+    const badge = document.getElementById('rrShiftBadge');
+    if(badge) badge.textContent = getShiftLabel();
+
+    rrLoadAvailableDates().then(() => rrRenderCalendar());
+}
+
+// ── Available dates ───────────────────────────────────────────────────────────
+
+async function rrLoadAvailableDates(){
+    try {
+        const res = await fetch('/api/report/available-dates');
+        if(!res.ok) return;
+        const data = await res.json();
+        RR.availableDates = new Set(data.dates || []);
+    } catch(e){ /* server not ready */ }
+}
+
+// ── Calendar rendering ───────────────────────────────────────────────────────
+
+const CAL_MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+const CAL_DOWS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function rrRenderCalendar(){
+    const label = document.getElementById('calMonthLabel');
+    const grid  = document.getElementById('calGrid');
+    if(!label || !grid) return;
+
+    label.textContent = CAL_MONTHS[RR.calMonth] + ' ' + RR.calYear;
+
+    // Day-of-week headers
+    let html = CAL_DOWS.map(d => `<div class="rr-cal-dow">${d}</div>`).join('');
+
+    // First day offset
+    const firstDay = new Date(RR.calYear, RR.calMonth, 1).getDay();
+    for(let i = 0; i < firstDay; i++) html += '<div class="rr-cal-day empty"></div>';
+
+    const today     = new Date();
+    const todayStr  = _dateStr(today);
+    const daysInMonth = new Date(RR.calYear, RR.calMonth + 1, 0).getDate();
+
+    for(let d = 1; d <= daysInMonth; d++){
+        const dStr   = `${RR.calYear}-${String(RR.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const hasRep = RR.availableDates.has(dStr);
+        const isTdy  = dStr === todayStr;
+        const isSel  = dStr === RR.selectedDate;
+        let cls = 'rr-cal-day';
+        if(hasRep)  cls += ' has-report';
+        if(isTdy)   cls += ' today';
+        if(isSel)   cls += ' selected';
+        const click = hasRep ? `onclick="rrSelectDate('${dStr}')"` : '';
+        html += `<div class="${cls}" ${click}>${d}</div>`;
+    }
+
+    grid.innerHTML = html;
+}
+
+function rrCalPrev(){
+    RR.calMonth--;
+    if(RR.calMonth < 0){ RR.calMonth = 11; RR.calYear--; }
+    rrRenderCalendar();
+}
+function rrCalNext(){
+    RR.calMonth++;
+    if(RR.calMonth > 11){ RR.calMonth = 0; RR.calYear++; }
+    rrRenderCalendar();
+}
+
+function _dateStr(d){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── Load helpers ─────────────────────────────────────────────────────────────
+
+function rrSetActiveBtn(which){
+    ['rrBtnWeek','rrBtnMonth','rrBtnYear'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.toggle('active', id === which);
+    });
+}
+
+function rrShowLoading(label){
+    document.getElementById('rrMainTitle').textContent = label;
+    document.getElementById('rrMainSub').textContent = 'Fetching report…';
+    document.getElementById('rrPeriodBadge').style.display = 'none';
+    document.getElementById('rrMainBody').innerHTML =
+        '<div class="rr-loading"><div class="rr-spinner"></div>Loading report…</div>';
+    RR.redraw = null;
+}
+
+function rrShowError(msg){
+    document.getElementById('rrMainBody').innerHTML =
+        `<div class="rr-error">${msg}</div>` +
+        '<div class="rr-empty" style="padding-top:24px;">' +
+        '<p>No report found for this period.</p>' +
+        '<small>Reports are generated automatically at 06:00 AM each day.<br>' +
+        'You can also trigger an archive manually via the API.</small>' +
+        '</div>';
+}
+
+function rrSetHeader(title, sub, badge){
+    document.getElementById('rrMainTitle').textContent = title;
+    document.getElementById('rrMainSub').textContent = sub;
+    const b = document.getElementById('rrPeriodBadge');
+    if(badge){ b.textContent = badge; b.style.display = ''; }
+    else { b.style.display = 'none'; }
+}
+
+// ── DAILY REPORT ─────────────────────────────────────────────────────────────
+
+async function rrSelectDate(dateStr){
+    RR.selectedDate = dateStr;
+    RR.mode = 'daily';
+    rrSetActiveBtn(null);
+    rrRenderCalendar();   // re-render to show selection
+
+    rrShowLoading('Daily Report — ' + dateStr);
+
+    try {
+        const res  = await fetch(`/api/report/daily/${dateStr}`);
+        const data = await res.json();
+        if(!data.ok){
+            rrSetHeader('Daily Report', dateStr, dateStr);
+            rrShowError(data.error || 'Report not found.');
+            return;
+        }
+        rrRenderDaily(data);
+    } catch(e){
+        rrShowError('Network error: ' + e.message);
+    }
+}
+
+function rrRenderDaily(data){
+    const dateLabel = data.date || '—';
+    const sum       = data.summary || {};
+    const depts     = data.departments || {};
+    const entries   = data.chart_entries || [];
+
+    rrSetHeader('Daily Report', dateLabel, dateLabel);
+
+    const totalPlant = sum.total_plant_defects || 0;
+    const deptKeys   = Object.keys(depts);
+    const maxDept    = sum.worst_department || '—';
+
+    // KPI tiles
+    let kpiHtml = `
+      <div class="rr-kpi"><div class="rr-kpi-label">Total Defects</div>
+        <div class="rr-kpi-value">${totalPlant}</div>
+        <div class="rr-kpi-sub">All departments combined</div></div>
+      <div class="rr-kpi"><div class="rr-kpi-label">Departments</div>
+        <div class="rr-kpi-value">${deptKeys.length}</div>
+        <div class="rr-kpi-sub">Tracked</div></div>
+      <div class="rr-kpi"><div class="rr-kpi-label">Highest Dept</div>
+        <div class="rr-kpi-value" style="font-size:16px;padding-top:4px;">${maxDept}</div>
+        <div class="rr-kpi-sub">${depts[maxDept] ? (depts[maxDept].total_defects || 0) + ' defects' : '—'}</div></div>
+      <div class="rr-kpi"><div class="rr-kpi-label">Save Events</div>
+        <div class="rr-kpi-value">${entries.length}</div>
+        <div class="rr-kpi-sub">Chart data points</div></div>`;
+
+    // Chart
+    const chartId    = 'rrDailyChart_' + Date.now();
+    const chartDepts = [...new Set(entries.map(e => e.department))];
+    let chartHtml = entries.length > 0
+        ? `<div class="rr-chart-header">
+             <div class="rr-section-title">Defect Activity (Hourly)</div>
+             <div class="chart-legend">${rrLegendHtml(chartDepts)}</div>
+           </div>
+           <div class="rr-chart-wrap"><canvas id="${chartId}"></canvas></div>`
+        : '';
+
+    // Dept breakdown table
+    let deptHtml = `
+      <div class="rr-section-title">Department Breakdown</div>
+      <table class="rr-dept-table"><thead><tr>
+        <th>Department</th><th>Total Defects</th><th>Employees</th><th>Share</th>
+      </tr></thead><tbody>`;
+
+    deptKeys.forEach(dept => {
+        const d   = depts[dept] || {};
+        const tot = d.total_defects || 0;
+        const pct = totalPlant > 0 ? Math.round(tot / totalPlant * 100) : 0;
+        const col = DEPT_COLORS_RR[dept] || '#64748b';
+        deptHtml += `<tr>
+          <td><div class="rr-dept-name"><span class="rr-dept-dot" style="background:${col};"></span>${dept}</div></td>
+          <td>${tot}</td><td>${d.employee_count || 0}</td>
+          <td><div>${pct}%</div><div class="rr-pct-bar"><div class="rr-pct-fill" style="width:${pct}%;background:${col};"></div></div></td>
+        </tr>`;
+    });
+    deptHtml += '</tbody></table>';
+
+    // Category breakdown per dept
+    let catHtml = '';
+    deptKeys.forEach(dept => {
+        const d   = depts[dept] || {};
+        const cats = d.defects_by_cat || {};
+        if(!Object.keys(cats).length) return;
+        const col = DEPT_COLORS_RR[dept] || '#64748b';
+        catHtml += `<div class="rr-section-title" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            ${dept} — Defect Categories</div>
+          <div class="rr-cat-grid">`;
+        Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([cat, val]) => {
+            catHtml += `<div class="rr-cat-tile">
+              <div class="rr-cat-name">${cat.replace(/_/g,' ')}</div>
+              <div class="rr-cat-val" style="color:${col};">${val}</div>
+              <div class="rr-cat-dept">${dept}</div>
+            </div>`;
+        });
+        catHtml += '</div>';
+    });
+
+    // Employee breakdown
+    let empHtml = '';
+    deptKeys.forEach(dept => {
+        const d   = depts[dept] || {};
+        const emps = d.employees || [];
+        if(!emps.length) return;
+        empHtml += `<div class="rr-section-title" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            ${dept} — Employee Details</div>
+          <table class="rr-dept-table"><thead><tr>
+            <th>Employee</th><th>Total Defects</th>`;
+        if(emps[0] && emps[0].defects){
+            Object.keys(emps[0].defects).forEach(cat =>
+                empHtml += `<th>${cat.replace(/_/g,' ')}</th>`);
+        }
+        empHtml += '</tr></thead><tbody>';
+        emps.forEach(emp => {
+            empHtml += `<tr><td>${emp.name || '—'}</td><td>${emp.total_defects || 0}</td>`;
+            Object.values(emp.defects || {}).forEach(v =>
+                empHtml += `<td>${v}</td>`);
+            empHtml += '</tr>';
+        });
+        empHtml += '</tbody></table>';
+    });
+
+    document.getElementById('rrMainBody').innerHTML =
+        `<div class="rr-kpi-row">${kpiHtml}</div>` +
+        chartHtml + deptHtml + catHtml + empHtml;
+
+    // Draw chart after DOM is ready
+    if(entries.length > 0){
+        setTimeout(() => rrDrawDailyChart(chartId, entries), 0);
+    }
+}
+
+// ── Canvas chart helpers (no external library — same approach as the
+//    Overview "Daily Defect Activity" chart, so Review Reports charts
+//    keep working with zero dependencies and match its look) ───────────────
+
+function rrDeptColors(dept){
+    const hex = DEPT_COLORS_RR[dept] || '#64748b';
+    return { line: hex, fillTop: hex + '38', fillBot: hex + '05', glow: hex + '55' };
+}
+
+function rrLegendHtml(depts){
+    return depts.map(d => {
+        const hex = DEPT_COLORS_RR[d] || '#64748b';
+        return `<div class="legend-item"><div class="legend-dot" style="background:${hex};"></div>${d}</div>`;
+    }).join('');
+}
+
+// Draws a multi-series area/line chart onto `canvas`, sized to its parent
+// wrapper. `series[dept]` is an array of { x, total } points already in
+// plot order. Pass either `opts.xLabel(value)` for a continuous numeric axis
+// (e.g. hour-of-day) or `opts.categories` for an evenly-spaced category axis
+// (e.g. day/month labels).
+function rrDrawAreaChart(canvas, series, depts, opts){
+    opts = opts || {};
+    const wrap = canvas.parentElement;
+    const W = wrap.clientWidth  || 600;
+    const H = wrap.clientHeight || 140;
+    canvas.width  = W;
+    canvas.height = H;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+
+    const PAD_L = 44, PAD_R = 16, PAD_T = 14, PAD_B = 28;
+    const plotW = W - PAD_L - PAD_R;
+    const plotH = H - PAD_T - PAD_B;
+
+    const xStart = opts.xStart != null ? opts.xStart : 0;
+    const xEnd   = opts.xEnd   != null ? opts.xEnd   : 1;
+    const xSpan  = (xEnd - xStart) || 1;
+
+    let yMax = 5;
+    depts.forEach(d => (series[d] || []).forEach(p => { if(p.total > yMax) yMax = p.total; }));
+    yMax = Math.ceil(yMax * 1.15 / 5) * 5;
+
+    const toX = v   => PAD_L + ((v - xStart) / xSpan) * plotW;
+    const toY = val => PAD_T + plotH - (val / yMax) * plotH;
+
+    // Soft plot background — same gradient as the Overview chart
+    const plotGrad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+    plotGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+    plotGrad.addColorStop(1, 'rgba(241,245,249,0.35)');
+    ctx.fillStyle = plotGrad;
+    ctx.fillRect(PAD_L, PAD_T, plotW, plotH);
+
+    // Horizontal grid + Y labels
+    const ySteps = 4;
+    ctx.textAlign = 'right';
+    ctx.font = '500 10px IBM Plex Mono, monospace';
+    for(let i = 0; i <= ySteps; i++){
+        const val = Math.round(yMax * i / ySteps);
+        const y   = toY(val);
+        ctx.strokeStyle = i === 0 ? 'rgba(100,116,139,0.28)' : 'rgba(148,163,184,0.16)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(PAD_L, y);
+        ctx.lineTo(PAD_L + plotW, y);
+        ctx.stroke();
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(val, PAD_L - 8, y + 3.5);
+    }
+
+    // Vertical grid + X labels — continuous numeric axis
+    ctx.font = '500 10px IBM Plex Mono, monospace';
+    if(opts.xLabel){
+        ctx.textAlign = 'center';
+        const step = opts.xStep || 1;
+        for(let v = xStart; v <= xEnd + 0.001; v += step){
+            const x = toX(v);
+            ctx.strokeStyle = 'rgba(148,163,184,0.14)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, PAD_T);
+            ctx.lineTo(x, PAD_T + plotH);
+            ctx.stroke();
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(opts.xLabel(v), x, PAD_T + plotH + 16);
+        }
+    } else if(opts.categories){
+        // Evenly-spaced category axis (day/month labels)
+        const rotate = opts.categories.length > 10;
+        ctx.textAlign = rotate ? 'right' : 'center';
+        opts.categories.forEach((label, i) => {
+            const x = toX(i);
+            ctx.strokeStyle = 'rgba(148,163,184,0.14)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, PAD_T);
+            ctx.lineTo(x, PAD_T + plotH);
+            ctx.stroke();
+            ctx.fillStyle = '#94a3b8';
+            if(rotate){
+                ctx.save();
+                ctx.translate(x, PAD_T + plotH + 20);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(label, 0, 0);
+                ctx.restore();
+            } else {
+                ctx.fillText(label, x, PAD_T + plotH + 16);
+            }
+        });
+    }
+
+    // Draw each dept's line + area fill + glow + point markers
+    depts.forEach(dept => {
+        const pts = series[dept] || [];
+        if(pts.length < 2) return;
+        const colors = rrDeptColors(dept);
+
+        const fillGrad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+        fillGrad.addColorStop(0, colors.fillTop);
+        fillGrad.addColorStop(1, colors.fillBot);
+        ctx.beginPath();
+        ctx.moveTo(toX(pts[0].x), toY(0));
+        pts.forEach(p => ctx.lineTo(toX(p.x), toY(p.total)));
+        ctx.lineTo(toX(pts[pts.length - 1].x), toY(0));
+        ctx.closePath();
+        ctx.fillStyle = fillGrad;
+        ctx.fill();
+
+        // Soft glow stroke
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            const x = toX(p.x), y = toY(p.total);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colors.glow;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.35;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Main line
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            const x = toX(p.x), y = toY(p.total);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colors.line;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Point markers at every data point
+        pts.forEach(p => {
+            const x = toX(p.x), y = toY(p.total);
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = colors.line;
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        });
+    });
+
+    // Axes border
+    ctx.strokeStyle = 'rgba(71,85,105,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, PAD_T);
+    ctx.lineTo(PAD_L, PAD_T + plotH);
+    ctx.lineTo(PAD_L + plotW, PAD_T + plotH);
+    ctx.stroke();
+}
+
+function rrDrawDailyChart(canvasId, entries){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+
+    const depts = [...new Set(entries.map(e => e.department))];
+
+    // Same time axis as the Overview chart: 6AM → 6AM next day (hours 6–30)
+    const series = {};
+    depts.forEach(dept => {
+        const pts = entries
+            .filter(e => e.department === dept)
+            .map(e => ({ x: e.hour_fraction < 6 ? e.hour_fraction + 24 : e.hour_fraction, total: e.total }))
+            .sort((a, b) => a.x - b.x);
+        pts.unshift({ x: 6, total: 0 });
+        series[dept] = pts;
+    });
+
+    rrDrawAreaChart(canvas, series, depts, {
+        xStart: 6, xEnd: 30, xStep: 2,
+        xLabel: h => {
+            const real = h % 24;
+            return (real % 12 || 12) + (real < 12 ? 'am' : 'pm');
+        },
+    });
+
+    RR.redraw = () => rrDrawDailyChart(canvasId, entries);
+}
+
+// ── WEEKLY REPORT ─────────────────────────────────────────────────────────────
+
+async function rrLoadWeek(){
+    RR.mode = 'weekly';
+    RR.selectedDate = null;
+    rrSetActiveBtn('rrBtnWeek');
+    rrRenderCalendar();
+
+    const now  = new Date();
+    const iso  = _isoWeek(now);
+    const label = `${iso.year}-week-${String(iso.week).padStart(2,'0')}`;
+    rrShowLoading('Weekly Report — ' + label);
+
+    try {
+        const res  = await fetch(`/api/report/weekly/${label}`);
+        const data = await res.json();
+        if(!data.ok){ rrSetHeader('Weekly Report', label, label); rrShowError(data.error || 'Report not found.'); return; }
+        rrRenderPeriodReport(data, 'weekly', label);
+    } catch(e){ rrShowError('Network error: ' + e.message); }
+}
+
+async function rrLoadMonth(){
+    RR.mode = 'monthly';
+    RR.selectedDate = null;
+    rrSetActiveBtn('rrBtnMonth');
+    rrRenderCalendar();
+
+    const now   = new Date();
+    const label = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    rrShowLoading('Monthly Report — ' + label);
+
+    try {
+        const res  = await fetch(`/api/report/monthly/${label}`);
+        const data = await res.json();
+        if(!data.ok){ rrSetHeader('Monthly Report', label, label); rrShowError(data.error || 'Report not found.'); return; }
+        rrRenderPeriodReport(data, 'monthly', label);
+    } catch(e){ rrShowError('Network error: ' + e.message); }
+}
+
+async function rrLoadYear(){
+    RR.mode = 'annual';
+    RR.selectedDate = null;
+    rrSetActiveBtn('rrBtnYear');
+    rrRenderCalendar();
+
+    const year  = new Date().getFullYear();
+    const label = String(year);
+    rrShowLoading('Annual Report — ' + label);
+
+    try {
+        const res  = await fetch(`/api/report/annual/${label}`);
+        const data = await res.json();
+        if(!data.ok){ rrSetHeader('Annual Report', label, label); rrShowError(data.error || 'Report not found.'); return; }
+        rrRenderPeriodReport(data, 'annual', label);
+    } catch(e){ rrShowError('Network error: ' + e.message); }
+}
+
+// ── Generic period report renderer (weekly / monthly / annual) ────────────────
+
+function rrRenderPeriodReport(data, type, label){
+    const sum      = data.summary || {};
+    const isAnnual = type === 'annual';
+
+    const titles = { weekly: 'Weekly Report', monthly: 'Monthly Report', annual: 'Annual Report' };
+    rrSetHeader(titles[type] || label, label, label);
+
+    // KPIs
+    const total   = sum.total_errors || sum.total_yearly_errors || 0;
+    const avg     = sum.average_daily_errors || sum.average_monthly_errors || 0;
+    const peak    = isAnnual ? (sum.worst_month || '—') : (sum.peak_error_day || '—');
+    const peakCnt = isAnnual
+        ? (data.months && data.months[sum.worst_month] ? data.months[sum.worst_month].total_errors : 0)
+        : (sum.peak_error_count || 0);
+    const best    = isAnnual
+        ? (sum.best_month || '—')
+        : (data.days ? Object.entries(data.days || {}).sort((a,b)=>a[1].total_plant_defects-b[1].total_plant_defects)[0]?.[0] : '—');
+
+    let kpiHtml = `
+      <div class="rr-kpi"><div class="rr-kpi-label">Total Defects</div>
+        <div class="rr-kpi-value">${total}</div>
+        <div class="rr-kpi-sub">${isAnnual ? 'Full year' : type === 'weekly' ? 'Full week' : 'Full month'}</div></div>
+      <div class="rr-kpi"><div class="rr-kpi-label">${isAnnual ? 'Avg / Month' : 'Avg / Day'}</div>
+        <div class="rr-kpi-value">${avg}</div>
+        <div class="rr-kpi-sub">Defects per ${isAnnual ? 'month' : 'day'}</div></div>
+      <div class="rr-kpi"><div class="rr-kpi-label">${isAnnual ? 'Worst Month' : 'Peak Day'}</div>
+        <div class="rr-kpi-value" style="font-size:14px;padding-top:6px;">${peak}</div>
+        <div class="rr-kpi-sub">${peakCnt} defects</div></div>
+      <div class="rr-kpi"><div class="rr-kpi-label">${isAnnual ? 'Best Month' : 'Best Day'}</div>
+        <div class="rr-kpi-value" style="font-size:14px;padding-top:6px;">${best}</div>
+        <div class="rr-kpi-sub">Lowest errors</div></div>`;
+
+    // ── Chart entries ──────────────────────────────────────────────────────────
+    // weekly/monthly: chart_entries = [{ label, department, total }, ...]
+    //   label = "YYYY-MM-DD" → x-axis shows day labels
+    // annual:         chart_entries = [{ label, department, total }, ...]
+    //   label = "YYYY-MM"   → x-axis shows month labels
+    const chartEntries = data.chart_entries || [];
+    const chartId      = 'rrPeriodChart_' + Date.now();
+    const chartTitle   = isAnnual ? 'Defect Activity — Monthly' : 'Defect Activity — Daily';
+    const chartDepts   = [...new Set(chartEntries.map(e => e.department))];
+    const chartHtml    = chartEntries.length > 0
+        ? `<div class="rr-chart-header">
+             <div class="rr-section-title">${chartTitle}</div>
+             <div class="chart-legend">${rrLegendHtml(chartDepts)}</div>
+           </div>
+           <div class="rr-chart-wrap" style="height:160px;"><canvas id="${chartId}"></canvas></div>`
+        : '';
+
+    // Dept errors table
+    const deptSums = sum.errors_per_department ||
+        (isAnnual && sum.department_ranking
+            ? Object.fromEntries((sum.department_ranking || []).map(r => [r.department, r.total]))
+            : {});
+
+    let deptHtml = `
+      <div class="rr-section-title">Department Totals</div>
+      <table class="rr-dept-table"><thead><tr>
+        <th>Department</th><th>Total Defects</th><th>Share</th>
+      </tr></thead><tbody>`;
+    Object.entries(deptSums).sort((a,b)=>b[1]-a[1]).forEach(([dept, val]) => {
+        const col = DEPT_COLORS_RR[dept] || '#64748b';
+        const pct = total > 0 ? Math.round(val / total * 100) : 0;
+        deptHtml += `<tr>
+          <td><div class="rr-dept-name"><span class="rr-dept-dot" style="background:${col};"></span>${dept}</div></td>
+          <td>${val}</td>
+          <td><div>${pct}%</div><div class="rr-pct-bar"><div class="rr-pct-fill" style="width:${pct}%;background:${col};"></div></div></td>
+        </tr>`;
+    });
+    deptHtml += '</tbody></table>';
+
+    // Breakdown list (days or months) with bar
+    const rowData = isAnnual
+        ? Object.entries(data.months || {}).map(([k,v]) => ({ label: v.month_label || k, key: k, total: v.total_errors || 0, peak: k === sum.worst_month }))
+        : Object.entries(data.days   || {}).map(([k,v]) => ({ label: k,                  key: k, total: v.total_plant_defects || 0, peak: k === sum.peak_error_day }));
+    rowData.sort((a,b) => a.key.localeCompare(b.key));
+    const maxRow = Math.max(1, ...rowData.map(r => r.total));
+
+    let listHtml = `<div class="rr-section-title" style="margin-top:14px;">${isAnnual ? 'Monthly Breakdown' : 'Daily Breakdown'}</div>
+      <div class="rr-day-list">`;
+    rowData.forEach(row => {
+        const pct = Math.round(row.total / maxRow * 100);
+        listHtml += `<div class="rr-day-row">
+          <span class="rr-day-date">${row.label}</span>
+          <div class="rr-day-bar-wrap"><div class="rr-day-bar-fill" style="width:${pct}%;"></div></div>
+          <span class="rr-day-total">${row.total}</span>
+          ${row.peak ? '<span class="rr-day-badge">Peak</span>' : ''}
+        </div>`;
+    });
+    listHtml += '</div>';
+
+    document.getElementById('rrMainBody').innerHTML =
+        `<div class="rr-kpi-row">${kpiHtml}</div>` + chartHtml + deptHtml + listHtml;
+
+    // Draw chart after DOM insert
+    if(chartEntries.length > 0){
+        setTimeout(() => rrDrawPeriodChart(chartId, chartEntries), 0);
+    }
+}
+
+// ── Period chart: category x-axis (day labels or month labels) ────────────────
+
+function rrDrawPeriodChart(canvasId, entries){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+
+    // Collect ordered unique x-labels
+    const labelsOrdered = [...new Set(entries.map(e => e.label))].sort();
+    const depts         = [...new Set(entries.map(e => e.department))];
+
+    const series = {};
+    depts.forEach(dept => {
+        const lookup = {};
+        entries.filter(e => e.department === dept).forEach(e => { lookup[e.label] = e.total; });
+        series[dept] = labelsOrdered.map((lbl, i) => ({ x: i, total: lookup[lbl] || 0 }));
+    });
+
+    rrDrawAreaChart(canvas, series, depts, {
+        xStart: 0, xEnd: Math.max(1, labelsOrdered.length - 1),
+        categories: labelsOrdered,
+    });
+
+    RR.redraw = () => rrDrawPeriodChart(canvasId, entries);
+}
+
+// ── ISO week helper ──────────────────────────────────────────────────────────
+
+function _isoWeek(date){
+    const d    = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day  = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return { year: d.getUTCFullYear(), week };
+}
+
+/* ===== LOGIN ===== */
+
+// Default credentials stored in users.json (served by your backend or loaded
+// locally). The file ships with one admin account; edit users.json to add more.
+// Format: [{ "username": "admin", "password": "admin123" }, ...]
+//
+// If the server cannot serve users.json, the overlay falls back to the
+// hardcoded DEFAULT_USERS list below so the dashboard still works stand-alone.
+
+const DEFAULT_USERS = [
+    { username: 'admin', password: 'admin123' }
+];
+
+const SESSION_KEY = 'qc_control_session';
+
+let loadedUsers = null;
+
+async function loadUsers(){
+    try {
+        const res = await fetch('users.json');
+        if(!res.ok) throw new Error('not found');
+        loadedUsers = await res.json();
+    } catch(e){
+        loadedUsers = DEFAULT_USERS;
+    }
+}
+
+function saveSession(username){
+    try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+            username: username,
+            loggedInAt: Date.now()
+        }));
+    } catch(e){ /* storage unavailable */ }
+}
+
+function getSession(){
+    try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch(e){
+        return null;
+    }
+}
+
+function clearSession(){
+    try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+}
+
+function isLoginOverlayVisible(){
+    return document.documentElement.classList.contains('auth-required');
+}
+
+function showLoginOverlay(){
+    document.documentElement.classList.add('auth-required');
+    const overlay = document.getElementById('loginOverlay');
+    if(!overlay) return;
+    overlay.style.display = '';
+    overlay.style.opacity = '';
+    overlay.style.pointerEvents = '';
+}
+
+function dismissLoginOverlay(immediate){
+    document.documentElement.classList.remove('auth-required');
+    const overlay = document.getElementById('loginOverlay');
+    const blur    = document.getElementById('loginBlur');
+    if(!overlay) return;
+
+    if(immediate){
+        overlay.style.display = 'none';
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        if(blur) blur.style.display = 'none';
+        return;
+    }
+
+    overlay.style.transition = 'opacity 0.35s ease';
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    if(blur){ blur.style.transition = 'opacity 0.35s ease'; blur.style.opacity = '0'; }
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.style.opacity = '';
+        overlay.style.transition = '';
+        if(blur){ blur.style.display = 'none'; blur.style.opacity = ''; blur.style.transition = ''; }
+    }, 360);
+}
+
+function getCurrentUser(){
+    if(currentUsername) return currentUsername;
+    const session = getSession();
+    return (session && session.username) ? session.username : 'unknown';
+}
+
+function closeUserMenu(){
+    const wrap = document.getElementById('userMenuWrap');
+    if(wrap) wrap.classList.remove('open');
+    const btn = document.getElementById('userMenuBtn');
+    if(btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleUserMenu(e){
+    if(e) e.stopPropagation();
+    const wrap = document.getElementById('userMenuWrap');
+    if(!wrap) return;
+    const open = wrap.classList.toggle('open');
+    const btn = document.getElementById('userMenuBtn');
+    if(btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function injectUserMenu(username){
+    currentUsername = username;
+    const wrap = document.getElementById('userMenuWrap');
+    const label = document.getElementById('userMenuLabel');
+    const btn = document.getElementById('userMenuBtn');
+    if(!wrap || !label) return;
+
+    label.textContent = username;
+    wrap.style.display = 'flex';
+    if(btn && !btn.dataset.bound){
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', toggleUserMenu);
+    }
+}
+
+function logout(){
+    closeUserMenu();
+    if(confirm('Sign out of QC Control Center?')){
+        isLoggedIn = false;
+        stopPolling();
+        clearSession();
+        location.reload();
+    }
+}
+
+function restoreSession(){
+    const session = getSession();
+    if(!session || !session.username){
+        showLoginOverlay();
+        return false;
+    }
+
+    const users = loadedUsers || DEFAULT_USERS;
+    if(!users.some(u => u.username === session.username)){
+        clearSession();
+        showLoginOverlay();
+        return false;
+    }
+
+    document.documentElement.classList.remove('auth-required');
+    dismissLoginOverlay(true);
+    injectUserMenu(session.username);
+    isLoggedIn = true;
+    return true;
+}
+
+function doLogin(){
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    const errorEl  = document.getElementById('loginError');
+    const userEl   = document.getElementById('loginUser');
+    const passEl   = document.getElementById('loginPass');
+    const btn      = document.getElementById('loginBtn');
+
+    errorEl.style.display = 'none';
+    userEl.classList.remove('error');
+    passEl.classList.remove('error');
+
+    if(!username || !password){
+        errorEl.innerText = 'Please enter your username and password.';
+        errorEl.style.display = 'block';
+        (!username ? userEl : passEl).classList.add('error');
+        return;
+    }
+
+    const users = loadedUsers || DEFAULT_USERS;
+    const match = users.find(u =>
+        u.username === username && u.password === password
+    );
+
+    if(match){
+        btn.disabled = true;
+        btn.innerText = 'Signing in…';
+        saveSession(match.username);
+
+        setTimeout(async () => {
+            isLoggedIn = true;
+            dismissLoginOverlay(false);
+            injectUserMenu(match.username);
+            await loadDepartments();
+            fetchChartLog();
+            startPolling();
+        }, 380);
+    } else {
+        errorEl.innerText = 'Incorrect username or password.';
+        errorEl.style.display = 'block';
+        userEl.classList.add('error');
+        passEl.classList.add('error');
+        passEl.value = '';
+        passEl.focus();
+    }
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && isLoginOverlayVisible()){
+        doLogin();
+    }
+});
+
+(async function boot(){
+    await loadUsers();
+    const restored = restoreSession();
+    if(!restored){
+        showLoginOverlay();
+        const userField = document.getElementById('loginUser');
+        if(userField) setTimeout(() => userField.focus(), 80);
+        // Do NOT load departments — nothing to show until the user signs in
+    } else {
+        startPolling();
+        await loadDepartments();
+    }
+})();
+
+document.addEventListener('click', closeUserMenu);
+
+</script>
+
+</body>
+</html>

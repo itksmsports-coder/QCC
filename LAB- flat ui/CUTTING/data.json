@@ -1,0 +1,153 @@
+{
+  "employees": [
+    {
+      "name": "Arancon, Cromwell C.",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Briz, Edwin D.",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Cadinas, Arnil P.",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 2,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Cultivo, Ariel C.",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Dela Cruz, Frinzferrie",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Delos Santos, Jose M.",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 1,
+        "WRONG_MATERIAL": 1,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Germono, Jun-Jun",
+      "defects": {
+        "WRONG_COLOR": 2,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 1,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Guinto, Bryan Joshua",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 2,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Lopez, Asher F.",
+      "defects": {
+        "WRONG_COLOR": 2,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Perez, Jayson G.",
+      "defects": {
+        "WRONG_COLOR": 0,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 2,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Resco, Ariel B.",
+      "defects": {
+        "WRONG_COLOR": 1,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 0,
+        "WRONG_MATERIAL": 0,
+        "OTHERS": 0
+      }
+    },
+    {
+      "name": "Sabilao, Arnold B.",
+      "defects": {
+        "WRONG_COLOR": 1,
+        "WRONG_SIZE": 0,
+        "WRONG_CUT": 0,
+        "OFF_SHADE": 0,
+        "LOW_QUALITY": 3,
+        "WRONG_MATERIAL": 1,
+        "OTHERS": 0
+      }
+    }
+  ],
+  "last_updated": "2026-07-03T14:24:31.672559",
+  "schedule": {
+    "hour": 6,
+    "minute": 0
+  }
+}

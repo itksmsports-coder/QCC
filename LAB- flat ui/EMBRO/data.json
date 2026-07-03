@@ -1,0 +1,202 @@
+{
+  "employees": [
+    {
+      "name": "Barias, Bryan",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 1,
+        "unbalanced": 1,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Quilaton, Jeramie",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Badaguas, Lovely",
+      "defects": {
+        "low_quality": 1,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Nadela, Lorelie",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Monares, Jeniva",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 1,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Rangel, Rosenda",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Baylon, Lorence",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Lalu, Juliana",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Larioza, Jarina",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Taza De, Jolina",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 1,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Amania, Rica Mae",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Teope, Chitle",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Osila,  Daisy",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Hijie, Keana",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Candame, Reymond",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    },
+    {
+      "name": "Jerusalem, Ma. Corazon",
+      "defects": {
+        "low_quality": 0,
+        "wrong_color_thread": 0,
+        "wrong_placement": 0,
+        "wrong_text_font": 0,
+        "unbalanced": 0,
+        "wrong_spelling": 0,
+        "others": 0
+      }
+    }
+  ],
+  "last_updated": "2026-07-03T14:01:18.397917",
+  "schedule": {
+    "hour": 6,
+    "minute": 0
+  },
+  "last_updated_by": "claire"
+}

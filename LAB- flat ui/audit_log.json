@@ -1,0 +1,2889 @@
+{
+  "entries": [
+    {
+      "timestamp": "2026-06-26T07:19:12.181695",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 1,
+              "to": 0
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher: 1 field(s); Guinto, Bryan Joshua: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:33:47.983238",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:34:03.065530",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:38:31.994591",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "WRONG_SIZE": {
+              "from": 0,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Guinto, Bryan Joshua: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:39:12.580349",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Cultivo, Ariel: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:40:08.905718",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Briz, Edwin",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Dela Cruz, Frinzferrie",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold: 1 field(s); Briz, Edwin: 1 field(s); Dela Cruz, Frinzferrie: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:40:27.134849",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 1,
+              "to": 4
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:48:53.927745",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Briz, Edwin",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Briz, Edwin: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:51:43.940348",
+      "user": "admin",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Employee 2",
+          "changes": {
+            "WRONG_COLOR_THREAD": {
+              "from": 3,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Employee 2: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T07:52:33.940277",
+      "user": "admin",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Employee 7",
+          "changes": {
+            "WRONG_PLACEMENT": {
+              "from": 0,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Employee 7: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T08:31:09.195180",
+      "user": "admin",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Employee 3",
+          "changes": {
+            "WRONG_PLACEMENT": {
+              "from": 0,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Employee 3: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T08:33:27.883147",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Briz, Edwin",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Briz, Edwin: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T12:29:50.798649",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T12:50:39.991747",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 5,
+              "to": 10
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "WRONG_SIZE": {
+              "from": 5,
+              "to": 10
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 5,
+              "to": 10
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher: 1 field(s); Guinto, Bryan Joshua: 1 field(s); Cultivo, Ariel: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T19:57:18.289300",
+      "user": "IT-ADMIN",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Candame, Reymond",
+          "changes": {
+            "OTHERS": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Candame, Reymond: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-26T19:57:27.851460",
+      "user": "IT-ADMIN",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Candame, Reymond",
+          "changes": {
+            "OTHERS": {
+              "from": 2,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Candame, Reymond: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-27T08:32:12.344515",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-27T08:32:23.506160",
+      "user": "admin",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 1,
+              "to": 0
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-27T17:54:39.763296",
+      "user": "cherry",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 3,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T07:45:14.620442",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [],
+      "summary": "No changes"
+    },
+    {
+      "timestamp": "2026-06-29T07:57:22.052488",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            },
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            },
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Dela Cruz, Frinzferrie",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 3
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            },
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 3 field(s); Cultivo, Ariel C.: 1 field(s); Dela Cruz, Frinzferrie: 1 field(s); Germono, Jun-Jun: 1 field(s); Guinto, Bryan Joshua: 1 field(s); Lopez, Asher F.: 1 field(s); Sabilao, Arnold B.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T08:03:12.673901",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Badaguas, Lovely",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Hijie, Keana",
+          "changes": {
+            "WRONG_COLOR_THREAD": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Badaguas, Lovely: 1 field(s); Teope, Chitle: 1 field(s); Hijie, Keana: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T08:46:06.260204",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "WRONG_SIZE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "WRONG_SIZE": {
+              "from": 0,
+              "to": 1
+            },
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 2
+            },
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Cultivo, Ariel C.: 1 field(s); Delos Santos, Jose M.: 2 field(s); Germono, Jun-Jun: 2 field(s); Guinto, Bryan Joshua: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T08:51:13.739847",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Amania, Rica Mae",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Amania, Rica Mae: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T09:12:20.867474",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 2,
+              "to": 3
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 1 field(s); Guinto, Bryan Joshua: 1 field(s); Perez, Jayson G.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T09:14:18.276737",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Badaguas, Lovely",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Amania, Rica Mae",
+          "changes": {
+            "OTHERS": {
+              "from": 1,
+              "to": 0
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Hijie, Keana",
+          "changes": {
+            "WRONG_COLOR_THREAD": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Badaguas, Lovely: 1 field(s); Amania, Rica Mae: 1 field(s); Teope, Chitle: 1 field(s); Hijie, Keana: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T09:15:40.328756",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Barias, Bryan",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Taza De, Jolina",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Barias, Bryan: 1 field(s); Taza De, Jolina: 1 field(s); Teope, Chitle: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T09:20:14.612902",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "WRONG_SIZE": {
+              "from": 0,
+              "to": 1
+            },
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T09:42:37.313380",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Barias, Bryan",
+          "changes": {
+            "WRONG_PLACEMENT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Rangel, Rosenda",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Baylon, Lorence",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Taza De, Jolina",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Jerusalem, Ma. Corazon",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Barias, Bryan: 1 field(s); Rangel, Rosenda: 1 field(s); Baylon, Lorence: 1 field(s); Taza De, Jolina: 2 field(s); Jerusalem, Ma. Corazon: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T10:10:43.665472",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 3,
+              "to": 4
+            },
+            "OFF_SHADE": {
+              "from": 2,
+              "to": 3
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 3,
+              "to": 4
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Delos Santos, Jose M.: 1 field(s); Germono, Jun-Jun: 2 field(s); Guinto, Bryan Joshua: 1 field(s); Perez, Jayson G.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T12:55:17.498725",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T12:55:36.096328",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 1,
+              "to": 0
+            },
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold B.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T13:00:11.088775",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Briz, Edwin D.",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Briz, Edwin D.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T13:15:06.073990",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Briz, Edwin D.",
+          "changes": {
+            "OTHERS": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 1,
+              "to": 2
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Briz, Edwin D.: 1 field(s); Cadinas, Arnil P.: 2 field(s); Resco, Ariel B.: 1 field(s); Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T14:52:55.442415",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 4,
+              "to": 5
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T15:41:43.509877",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 5,
+              "to": 6
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T16:11:22.123722",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 2,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T16:20:18.859634",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 4,
+              "to": 5
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Guinto, Bryan Joshua: 1 field(s); Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T16:21:52.897697",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "WRONG_COLOR_THREAD": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 2,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Teope, Chitle: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T16:51:41.223257",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [],
+      "summary": "No changes"
+    },
+    {
+      "timestamp": "2026-06-29T17:43:10.097634",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 6,
+              "to": 7
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-29T17:43:34.794322",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Perez, Jayson G.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T06:51:49.793441",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Arancon, Cromwell C.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 3
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Arancon, Cromwell C.: 1 field(s); Delos Santos, Jose M.: 1 field(s); Germono, Jun-Jun: 2 field(s); Resco, Ariel B.: 2 field(s); Sabilao, Arnold B.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T06:53:53.047830",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Monares, Jeniva: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T07:37:21.334844",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 3,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T07:37:29.812225",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cultivo, Ariel C.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T07:37:57.247466",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T08:29:28.160736",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Perez, Jayson G.: 1 field(s); Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T08:46:18.435741",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [],
+      "summary": "No changes"
+    },
+    {
+      "timestamp": "2026-06-30T08:46:50.520912",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T08:52:15.429107",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Amania, Rica Mae",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Amania, Rica Mae: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T08:57:50.516967",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 2,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T08:58:07.247625",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 2,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T09:02:08.734219",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T09:40:29.258589",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            },
+            "OFF_SHADE": {
+              "from": 1,
+              "to": 3
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            },
+            "WRONG_SIZE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 2 field(s); Perez, Jayson G.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T09:42:05.462068",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Badaguas, Lovely",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Badaguas, Lovely: 1 field(s); Teope, Chitle: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T10:04:19.427560",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 3,
+              "to": 4
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher F.: 1 field(s); Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T10:34:47.325446",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Nadela, Lorelie",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Nadela, Lorelie: 1 field(s); Teope, Chitle: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T10:55:49.691933",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Rangel, Rosenda",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Jerusalem, Ma. Corazon",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Rangel, Rosenda: 1 field(s); Jerusalem, Ma. Corazon: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T11:27:02.592400",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Perez, Jayson G.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T11:45:53.891120",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T13:23:45.169972",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 3,
+              "to": 4
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 1,
+              "to": 2
+            },
+            "WRONG_COLOR": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Cultivo, Ariel C.: 1 field(s); Germono, Jun-Jun: 1 field(s); Sabilao, Arnold B.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T13:26:52.424977",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Badaguas, Lovely",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Jerusalem, Ma. Corazon",
+          "changes": {
+            "OTHERS": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Badaguas, Lovely: 1 field(s); Monares, Jeniva: 1 field(s); Jerusalem, Ma. Corazon: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T13:34:26.275139",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Rangel, Rosenda",
+          "changes": {
+            "OTHERS": {
+              "from": 1,
+              "to": 0
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Larioza, Jarina",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Rangel, Rosenda: 1 field(s); Larioza, Jarina: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T14:13:18.880218",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 3,
+              "to": 4
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 2,
+              "to": 3
+            },
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Delos Santos, Jose M.: 1 field(s); Germono, Jun-Jun: 1 field(s); Lopez, Asher F.: 1 field(s); Sabilao, Arnold B.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T15:41:37.568326",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-06-30T17:27:16.866755",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Arancon, Cromwell C.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Arancon, Cromwell C.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T06:01:31.510680",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s); Perez, Jayson G.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T06:01:47.775426",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Monares, Jeniva: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T10:25:18.272347",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Arancon, Cromwell C.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Dela Cruz, Frinzferrie",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            },
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Arancon, Cromwell C.: 1 field(s); Dela Cruz, Frinzferrie: 1 field(s); Delos Santos, Jose M.: 1 field(s); Germono, Jun-Jun: 1 field(s); Perez, Jayson G.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T10:27:43.358126",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Larioza, Jarina",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Taza De, Jolina",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Teope, Chitle",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Larioza, Jarina: 1 field(s); Taza De, Jolina: 1 field(s); Teope, Chitle: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T10:28:54.035669",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Jerusalem, Ma. Corazon",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Jerusalem, Ma. Corazon: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T12:59:02.351312",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "WRONG_SIZE": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cultivo, Ariel C.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T13:52:39.926619",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Barias, Bryan",
+          "changes": {
+            "WRONG_TEXT_FONT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Barias, Bryan: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T17:17:41.637518",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s); Delos Santos, Jose M.: 1 field(s); Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T17:20:22.521148",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Barias, Bryan",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Nadela, Lorelie",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Barias, Bryan: 1 field(s); Nadela, Lorelie: 1 field(s); Monares, Jeniva: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T17:21:39.642976",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 2,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Monares, Jeniva: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T22:39:55.079745",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 3
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "OFF_SHADE": {
+              "from": 0,
+              "to": 2
+            },
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 4
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 2 field(s); Cultivo, Ariel C.: 2 field(s); Lopez, Asher F.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-01T23:17:02.500649",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Delos Santos, Jose M.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T06:47:27.628347",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Arancon, Cromwell C.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Arancon, Cromwell C.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T06:47:43.830629",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Larioza, Jarina",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Larioza, Jarina: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T08:06:45.011155",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Taza De, Jolina",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Taza De, Jolina: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T08:06:58.138924",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Osila,  Daisy",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Osila,  Daisy: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T08:37:47.289073",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Nadela, Lorelie",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Baylon, Lorence",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Nadela, Lorelie: 1 field(s); Baylon, Lorence: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T08:41:21.484405",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Guinto, Bryan Joshua: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T08:42:17.674440",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T10:37:33.073691",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Delos Santos, Jose M.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T10:38:13.646098",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Briz, Edwin D.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Briz, Edwin D.: 1 field(s); Germono, Jun-Jun: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T10:39:00.083116",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "WRONG_CUT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T11:51:01.054274",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher F.: 1 field(s); Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T12:42:24.944707",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cultivo, Ariel C.",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cultivo, Ariel C.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T13:48:27.726407",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Amania, Rica Mae",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Monares, Jeniva: 1 field(s); Amania, Rica Mae: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T13:48:37.465603",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Lopez, Asher F.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T14:56:31.728979",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 3,
+              "to": 0
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Guinto, Bryan Joshua: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-07-02T16:52:51.505690",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 3,
+              "to": 4
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 1 field(s); Guinto, Bryan Joshua: 1 field(s); Perez, Jayson G.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T01:54:20.366418",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "OTHERS": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s); Germono, Jun-Jun: 1 field(s); Perez, Jayson G.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T04:26:55.658857",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Taza De, Jolina",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Taza De, Jolina: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T08:17:04.112667",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Guinto, Bryan Joshua",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Germono, Jun-Jun: 1 field(s); Guinto, Bryan Joshua: 1 field(s); Sabilao, Arnold B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T08:17:23.269751",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Taza De, Jolina",
+          "changes": {
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Taza De, Jolina: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T10:43:58.589369",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Resco, Ariel B.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s); Delos Santos, Jose M.: 1 field(s); Perez, Jayson G.: 1 field(s); Resco, Ariel B.: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T10:44:09.642991",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Badaguas, Lovely",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Badaguas, Lovely: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T14:01:03.301623",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Cadinas, Arnil P.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Delos Santos, Jose M.",
+          "changes": {
+            "WRONG_MATERIAL": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Germono, Jun-Jun",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Lopez, Asher F.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 2
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Sabilao, Arnold B.",
+          "changes": {
+            "WRONG_COLOR": {
+              "from": 0,
+              "to": 1
+            },
+            "LOW_QUALITY": {
+              "from": 0,
+              "to": 3
+            }
+          }
+        }
+      ],
+      "summary": "Cadinas, Arnil P.: 1 field(s); Delos Santos, Jose M.: 1 field(s); Germono, Jun-Jun: 1 field(s); Lopez, Asher F.: 1 field(s); Sabilao, Arnold B.: 2 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T14:01:18.401415",
+      "user": "claire",
+      "department": "EMBRO",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Barias, Bryan",
+          "changes": {
+            "WRONG_TEXT_FONT": {
+              "from": 0,
+              "to": 1
+            },
+            "UNBALANCED": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        },
+        {
+          "type": "defects_updated",
+          "employee": "Monares, Jeniva",
+          "changes": {
+            "WRONG_TEXT_FONT": {
+              "from": 0,
+              "to": 1
+            }
+          }
+        }
+      ],
+      "summary": "Barias, Bryan: 2 field(s); Monares, Jeniva: 1 field(s)"
+    },
+    {
+      "timestamp": "2026-07-03T14:24:31.694415",
+      "user": "claire",
+      "department": "CUTTING",
+      "action": "update",
+      "changes": [
+        {
+          "type": "defects_updated",
+          "employee": "Perez, Jayson G.",
+          "changes": {
+            "LOW_QUALITY": {
+              "from": 1,
+              "to": 2
+            }
+          }
+        }
+      ],
+      "summary": "Perez, Jayson G.: 1 field(s)"
+    }
+  ]
+}

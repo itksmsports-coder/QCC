@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>QC Control Center</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!--
+  PERF: styles.css is loaded in <head> (render-blocking is correct for CSS;
+  it prevents a flash of unstyled content).  Previously the 1000-line <style>
+  block was inline — now it's a separate file the browser can cache across
+  page loads so the style engine only parses it once.
+-->
+<link rel="stylesheet" href="styles.css">
+
+<!--
+  Auth-gate: runs inline and synchronously to add 'auth-required' before first
+  paint — this prevents showing the dashboard to unauthenticated users even for
+  a single frame.  Kept inline intentionally (must run before CSS applies).
+-->
+<script>
+(function(){
+    try {
+        var raw = localStorage.getItem('qc_control_session');
+        if(!raw){ document.documentElement.classList.add('auth-required'); return; }
+        var session = JSON.parse(raw);
+        if(!session || !session.username) document.documentElement.classList.add('auth-required');
+    } catch(e){
+        document.documentElement.classList.add('auth-required');
+    }
+})();
+</script>
+
+</head>
+<body>
+
+<!-- Static decorative watermark (no JS needed) -->
+<div class="bg-watermark" aria-hidden="true"></div>
+
+<div class="app">
+
+    <!-- ─── TOP NAV ───────────────────────────────────────────────── -->
+    <div class="topnav">
+        <div class="brand">
+            <img src="logo.png" class="logo-img" alt="Logo"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div style="display:none;width:68px;height:68px;background:var(--blue-soft);border:1px solid var(--blue-border);border-radius:8px;align-items:center;justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="#1e40af" stroke-width="1.8"/>
+                    <path d="M8 12l3 3 5-5" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="brand-text">QC Control<br>Center</div>
+        </div>
+
+        <!-- Tabs rendered by JS -->
+        <div class="nav-tabs" id="navTabs"></div>
+
+        <div class="status-cluster">
+            <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+            <div class="clock-box">
+                <div id="clock">00:00:00</div>
+                <div id="date">Loading…</div>
+            </div>
+            <div class="user-menu-wrap" id="userMenuWrap">
+                <button class="user-menu-btn" id="userMenuBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                    <svg class="cog-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span id="userMenuLabel">User</span>
+                    <span class="user-menu-caret">▾</span>
+                </button>
+                <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <button class="user-menu-item" type="button" onclick="openLogsModal()">Logs</button>
+                    <button class="user-menu-item danger" type="button" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── VIEW CONTAINER ────────────────────────────────────────── -->
+    <div class="view-container">
+
+        <div class="error-banner" id="errorBanner" style="display:none;"></div>
+
+        <!-- OVERVIEW ──────────────────────────────────────────────── -->
+        <div class="view active" id="view-overview">
+            <div class="overview-header">
+                <div>
+                    <h1>Overview</h1>
+                    <p>Live snapshot across all departments — counts refresh every second.</p>
+                </div>
+                <div class="overview-shift" id="overviewShift">—</div>
+            </div>
+
+            <div class="overview-body">
+                <!-- KPI tiles — built & patched by JS -->
+                <div class="overview-kpi-row" id="overviewKpiRow"></div>
+
+                <div class="overview-split">
+                    <!-- Activity chart -->
+                    <div class="chart-panel" id="chartPanel">
+                        <div class="chart-panel-header">
+                            <span class="chart-panel-title">Daily Defect Activity — Hourly</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#2563eb;"></div>
+                                    CUTTING
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#e11d48;"></div>
+                                    EMBRO
+                                </div>
+                                <span class="chart-meta" id="chartResetLabel">Resets at 06:00</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-wrap" id="chartWrap">
+                            <div class="chart-empty" id="chartEmpty">No save events yet today — data will appear after the first update.</div>
+                            <canvas id="activityChart" style="display:none;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Side panel: compare + recent activity -->
+                    <div class="insights-stack">
+                        <div class="compare-panel" id="deptComparePanel"></div>
+                        <div class="recent-panel">
+                            <div class="panel-title">Recent Activity</div>
+                            <div class="recent-list" id="recentActivityList">
+                                <div class="recent-empty">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Department cards — built & patched by JS -->
+                <div class="dept-grid" id="deptGrid"></div>
+            </div>
+        </div>
+
+        <!-- DETAIL ────────────────────────────────────────────────── -->
+        <div class="view" id="view-detail">
+            <div class="detail-header">
+                <div class="detail-back-row">
+                    <button class="btn-ghost-sm" onclick="location.hash='#/'">&larr; Overview</button>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="action-btn btn-reset" id="detailResetBtn">↺ Reset</button>
+                    <button class="action-btn btn-excel" id="detailExportBtn">↓ Export Excel</button>
+                    <button class="action-btn btn-update" style="flex:none;" id="detailUpdateBtn">Update</button>
+                </div>
+            </div>
+
+            <div class="detail-stats">
+                <div class="stat-chip">Employees&nbsp;<b id="detailEmpCount">0</b></div>
+                <div class="stat-chip">Defects logged&nbsp;<b id="detailDefectCount">0</b></div>
+                <div class="stat-chip">Most frequent&nbsp;<b id="detailTopCat">—</b></div>
+            </div>
+
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="table-title-group">
+                        <span class="dept-code" id="detailCode"></span>
+                        <span class="table-title" id="detailTableTitle">Inspection log</span>
+                    </div>
+                    <div class="live-monitor">Live total: <span class="live-number" id="detailLiveTotal">0</span></div>
+                </div>
+                <div class="table-scroll" id="detailTableScroll">
+                    <div id="detailTableContainer"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ─── LOGIN OVERLAY ──────────────────────────────────────────────── -->
+<div id="loginOverlay">
+    <div class="login-glow">
+
+        <div class="login-logo-above">
+            <img src="logo.png" alt="Logo"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="logo-fallback-above" style="display:none;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.80)" stroke-width="1.8"/>
+                    <path d="M8 12l3 3 5-5" stroke="rgba(255,255,255,0.80)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="login-box">
+            <div class="login-title">QC Control Center</div>
+            <div class="login-subtitle">Sign in to access the dashboard</div>
+
+            <div class="login-error" id="loginError">Incorrect username or password.</div>
+
+            <div class="login-field">
+                <label class="login-label" for="loginUser">Username</label>
+                <input class="login-input" type="text" id="loginUser"
+                       placeholder="Enter username" autocomplete="username" spellcheck="false">
+            </div>
+
+            <div class="login-field">
+                <label class="login-label" for="loginPass">Password</label>
+                <input class="login-input" type="password" id="loginPass"
+                       placeholder="Enter password" autocomplete="current-password">
+            </div>
+
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+
+            <div class="login-footer">QC Control Center &mdash; Authorized access only</div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── LOGS MODAL ──────────────────────────────────────────────────── -->
+<div class="modal" id="logsModal">
+    <div class="modal-content logs-modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Audit trail</div>
+                <h2>Activity Logs</h2>
+            </div>
+            <button class="close-btn" onclick="closeLogsModal()" aria-label="Close">×</button>
+        </div>
+        <div id="logsBody" class="logs-body">
+            <div class="logs-empty">Loading logs…</div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── EDIT CONSOLE MODAL ──────────────────────────────────────────── -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="modal-eyebrow">Edit console</div>
+                <h2 id="consoleDeptName">Department</h2>
+            </div>
+            <button class="close-btn" onclick="closeModal()" aria-label="Close">×</button>
+        </div>
+        <div id="consoleBody"></div>
+        <div class="modal-actions">
+            <button class="action-btn btn-add-emp" onclick="addEmployeeRow()">+ Add Employee</button>
+            <div style="flex:1;"></div>
+            <button class="action-btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="action-btn btn-save" onclick="saveConsole()">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<!--
+  PERF: dashboard.js loaded as defer at the bottom of <body>.
+  - defer: parsed in parallel with HTML, executed after DOM is ready.
+  - Placed after all HTML so cacheRefs() finds every element immediately.
+  - Previously the 1100-line <script> was inline inside <body>; the browser
+    had to parse and compile it synchronously during first render.
+    As a separate file it's cached across reloads and the parse happens
+    off the main thread.
+-->
+<script src="dashboard.js" defer></script>
+
+</body>
+</html>

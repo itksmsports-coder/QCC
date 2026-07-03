@@ -1,0 +1,17 @@
+{
+  "last_reset": "2026-06-27T06:00:00",
+  "entries": [
+    {
+      "timestamp": "2026-06-27T08:32:12.343695",
+      "hour_fraction": 8.5367,
+      "department": "CUTTING",
+      "total": 1
+    },
+    {
+      "timestamp": "2026-06-27T08:32:23.505279",
+      "hour_fraction": 8.5397,
+      "department": "CUTTING",
+      "total": 0
+    }
+  ]
+}

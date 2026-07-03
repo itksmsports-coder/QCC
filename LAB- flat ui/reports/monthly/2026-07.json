@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "label": "2026-07",
+  "period": "monthly",
+  "days": {
+    "2026-07-01": {
+      "date": "2026-07-01",
+      "total_plant_defects": 61,
+      "worst_department": "CUTTING",
+      "departments": {
+        "CUTTING": 49,
+        "EMBRO": 12
+      }
+    },
+    "2026-07-02": {
+      "date": "2026-07-02",
+      "total_plant_defects": 0,
+      "worst_department": "CUTTING",
+      "departments": {
+        "CUTTING": 0,
+        "EMBRO": 0
+      }
+    },
+    "2026-07-03": {
+      "date": "2026-07-03",
+      "total_plant_defects": 0,
+      "worst_department": "CUTTING",
+      "departments": {
+        "CUTTING": 0,
+        "EMBRO": 0
+      }
+    }
+  },
+  "summary": {
+    "total_errors": 61,
+    "errors_per_department": {
+      "CUTTING": 49,
+      "EMBRO": 12
+    },
+    "average_daily_errors": 20.3,
+    "peak_error_day": "2026-07-01",
+    "peak_error_count": 61
+  }
+}

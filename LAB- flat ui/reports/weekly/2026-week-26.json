@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "label": "2026-week-26",
+  "period": "weekly",
+  "days": {
+    "2026-06-28": {
+      "date": "2026-06-28",
+      "total_plant_defects": 0,
+      "worst_department": "CUTTING",
+      "departments": {
+        "CUTTING": 0,
+        "EMBRO": 0
+      }
+    }
+  },
+  "summary": {
+    "total_errors": 0,
+    "errors_per_department": {
+      "CUTTING": 0,
+      "EMBRO": 0
+    },
+    "average_daily_errors": 0.0,
+    "peak_error_day": "2026-06-28",
+    "peak_error_count": 0
+  }
+}

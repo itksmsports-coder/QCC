@@ -1,0 +1,22 @@
+[
+  {
+    "username": "admin",
+    "password": "admin123"
+  },
+  {
+    "username": "cherry",
+    "password": "KSM_RND*2026"
+  },
+  {
+    "username": "janna",
+    "password": "KSM_RND*2026"
+  },
+  {
+    "username": "claire",
+    "password": "KSM_RND*2026"
+  },
+  {
+    "username": "IT-ADMIN",
+    "password": "KSM_IT*2026"
+  }
+]
