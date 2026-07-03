@@ -205,4 +205,9 @@ Edit these dictionaries (or add a new one for a new department) to change what c
 
 ## License
 
----
+License
+Copyright © 2026 KSM Sports - K.Calantog . All rights reserved.
+
+This software is proprietary. It is intended for internal use only.
+
+No part of this software may be copied, modified, distributed, sublicensed, or used outside the organization without prior written permission.
